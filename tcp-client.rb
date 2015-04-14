@@ -2,7 +2,11 @@
 Author: Dylan Zingler 
 Purpose: Project 3 CMSC417
 
-Usage 
+Usage:
+$ ruby tcp-client.rb 
+
+Citations:
+http://www.tutorialspoint.com/ruby/ruby_socket_programming.htm
 
 =end
 

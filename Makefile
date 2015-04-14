@@ -9,10 +9,8 @@ rm       = rm -f
 
 # File Groups
 RUBY  := $(wildcard *.rb)
-CPrograms  := $(wildcard *.c)
+CPROGRAMS := $(wildcard *.c)
 EDITED_FILES  := $(wildcard *~)
-
-
 
 
 # Clean-Up

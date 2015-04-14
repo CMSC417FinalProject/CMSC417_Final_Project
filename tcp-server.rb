@@ -2,8 +2,11 @@
 Author: Dylan Zingler 
 Purpose: Project 3 CMSC417
 
-Usage 
+Usage:
+$ ruby tcp-server.rb 
 
+Citations:
+http://www.tutorialspoint.com/ruby/ruby_socket_programming.htm
 =end
 
 require 'socket'                # Get sockets from stdlib

@@ -20,7 +20,7 @@ s.close               # Close the socket when done
 
 ### TCP Server in Ruby
 ```ruby
-require 'socket'                # Get sockets from stdlib
+	require 'socket'                # Get sockets from stdlib
 
 server = TCPServer.open(2000)   # Socket to listen on port 2000
 loop {                          # Servers run forever
@@ -31,3 +31,31 @@ loop {                          # Servers run forever
   end
 }
 ```
+
+### File Input and Output
+```ruby
+File.open('YOUR-FILENAME-HERE.txt', 'r') do |f1|  
+  while line = f1.gets  
+    puts line  
+  end  
+end
+```
+- Notice that the object returned from File.Open is assigned to f1, then each line is 'gotten' from the file printed and then discarded
+
+```ruby
+File.open('NAME-OF-NEWFILE-HERE.txt', 'w') do |f2|  
+  # use "\n" for two lines of text  
+  f2.puts "Created by Satish\nThank God!"  
+end
+```
+
+
+
+
+```ruby
+```
+
+
+
+
+
