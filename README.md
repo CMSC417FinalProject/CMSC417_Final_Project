@@ -49,6 +49,12 @@ File.open('NAME-OF-NEWFILE-HERE.txt', 'w') do |f2|
 end
 ```
 
+### CSV Files
+```ruby
+require 'csv'
+customers = CSV.read('NAME-OF-CSVFILE.csv')
+```
+- creates a list of lists of strings
 
 
 
