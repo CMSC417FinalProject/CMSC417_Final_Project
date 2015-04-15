@@ -9,10 +9,14 @@ Triana
 
 
 
-=begin
-	
-Trying to retrieve neighbors
+puts "Section 1: Retrieve the neighbors of the nodes"
 
+=begin
+Trying to retrieve neighbors -SA
 =end
 
-puts "Hello Group"
+ifconfig = `ifconfig`
+#puts ifconfig
+ip = ifconfig.match(/eth0/)[0]
+puts ip
+puts "End of Section 1"
