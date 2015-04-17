@@ -68,7 +68,7 @@ customers = CSV.read('NAME-OF-CSVFILE.csv')
 
 1. Create Network on Core
 2. File > Save As XML
-3. $ ruby network_parser.rb <YOUR-XML-NETWORK.xml>
+3. $ ruby network_parser.rb YOUR-XML-NETWORK.xml
 4. An atl and nta file prefixed with the xml file name should be in the same directory
 
 
