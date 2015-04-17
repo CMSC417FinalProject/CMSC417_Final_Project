@@ -65,6 +65,7 @@ customers = CSV.read('NAME-OF-CSVFILE.csv')
 
 ### network_parser.rb
 - Address to link and Node to Address file generation on any network from XML
+
 1. Create Network on Core
 2. File > Save As XML
 3. $ ruby network_parser.rb <YOUR-XML-NETWORK.xml>
