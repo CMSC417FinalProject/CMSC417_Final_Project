@@ -1,6 +1,6 @@
 # Members
-Sarthi Andley
-Dylan Zingler
+- Sarthi Andley
+- Dylan Zingler
 
 
 
