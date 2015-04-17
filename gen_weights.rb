@@ -1,3 +1,4 @@
+# USAGE: $ ruby gen_weights.rb addrs_to_links.txt <outputfile.txt> <time_interval>
 
 
 fHandle_ns = File.open(ARGV[0], 'r')

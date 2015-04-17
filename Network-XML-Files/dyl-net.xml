@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scenario>
+  <NetworkPlan>
+    <NetworkDefinition id="8584" name="8584" type="PtpNet"/>
+    <NetworkDefinition id="49330" name="49330" type="PtpNet"/>
+    <NetworkDefinition id="64976" name="64976" type="PtpNet"/>
+    <NetworkDefinition id="2342" name="2342" type="PtpNet"/>
+    <NetworkDefinition id="31669" name="31669" type="PtpNet"/>
+    <NetworkDefinition id="25398" name="25398" type="PtpNet"/>
+    <NetworkDefinition id="26103" name="26103" type="PtpNet"/>
+    <NetworkDefinition id="29439" name="29439" type="PtpNet"/>
+    <NetworkDefinition id="20797" name="20797" type="PtpNet"/>
+    <NetworkDefinition id="24895" name="24895" type="PtpNet"/>
+    <Node id="1" name="n1" type="PC">
+      <interface name="eth0" net="25398">
+        <address type="mac">00:00:00:aa:00:00</address>
+        <address>10.0.0.20/24</address>
+        <address>2001::20/64</address>
+      </interface>
+      <interface name="eth1" net="24895">
+        <address type="mac">00:00:00:aa:00:05</address>
+        <address>10.0.2.21/24</address>
+        <address>2001:2::21/64</address>
+      </interface>
+      <interface name="eth2" net="29439">
+        <address type="mac">00:00:00:aa:00:12</address>
+        <address>10.0.9.20/24</address>
+        <address>2001:9::20/64</address>
+      </interface>
+    </Node>
+    <Node id="2" name="n2" type="PC">
+      <interface name="eth0" net="2342">
+        <address type="mac">00:00:00:aa:00:02</address>
+        <address>10.0.1.20/24</address>
+        <address>2001:1::20/64</address>
+      </interface>
+      <interface name="eth1" net="24895">
+        <address type="mac">00:00:00:aa:00:04</address>
+        <address>10.0.2.20/24</address>
+        <address>2001:2::20/64</address>
+      </interface>
+      <interface name="eth2" net="26103">
+        <address type="mac">00:00:00:aa:00:06</address>
+        <address>10.0.3.20/24</address>
+        <address>2001:3::20/64</address>
+      </interface>
+    </Node>
+    <Node id="3" name="n3" type="PC">
+      <interface name="eth0" net="25398">
+        <address type="mac">00:00:00:aa:00:01</address>
+        <address>10.0.0.21/24</address>
+        <address>2001::21/64</address>
+      </interface>
+      <interface name="eth1" net="2342">
+        <address type="mac">00:00:00:aa:00:03</address>
+        <address>10.0.1.21/24</address>
+        <address>2001:1::21/64</address>
+      </interface>
+      <interface name="eth2" net="64976">
+        <address type="mac">00:00:00:aa:00:08</address>
+        <address>10.0.4.20/24</address>
+        <address>2001:4::20/64</address>
+      </interface>
+      <interface name="eth3" net="20797">
+        <address type="mac">00:00:00:aa:00:10</address>
+        <address>10.0.8.20/24</address>
+        <address>2001:8::20/64</address>
+      </interface>
+    </Node>
+    <Node id="4" name="n4" type="PC">
+      <interface name="eth0" net="26103">
+        <address type="mac">00:00:00:aa:00:07</address>
+        <address>10.0.3.21/24</address>
+        <address>2001:3::21/64</address>
+      </interface>
+      <interface name="eth1" net="64976">
+        <address type="mac">00:00:00:aa:00:09</address>
+        <address>10.0.4.21/24</address>
+        <address>2001:4::21/64</address>
+      </interface>
+      <interface name="eth2" net="49330">
+        <address type="mac">00:00:00:aa:00:0a</address>
+        <address>10.0.5.20/24</address>
+        <address>2001:5::20/64</address>
+      </interface>
+    </Node>
+    <Node id="5" name="n5" type="PC">
+      <interface name="eth0" net="49330">
+        <address type="mac">00:00:00:aa:00:0b</address>
+        <address>10.0.5.21/24</address>
+        <address>2001:5::21/64</address>
+      </interface>
+      <interface name="eth1" net="31669">
+        <address type="mac">00:00:00:aa:00:0c</address>
+        <address>10.0.6.20/24</address>
+        <address>2001:6::20/64</address>
+      </interface>
+    </Node>
+    <Node id="6" name="n6" type="PC">
+      <interface name="eth0" net="31669">
+        <address type="mac">00:00:00:aa:00:0d</address>
+        <address>10.0.6.21/24</address>
+        <address>2001:6::21/64</address>
+      </interface>
+      <interface name="eth1" net="8584">
+        <address type="mac">00:00:00:aa:00:0e</address>
+        <address>10.0.7.20/24</address>
+        <address>2001:7::20/64</address>
+      </interface>
+    </Node>
+    <Node id="7" name="n7" type="PC">
+      <interface name="eth0" net="8584">
+        <address type="mac">00:00:00:aa:00:0f</address>
+        <address>10.0.7.21/24</address>
+        <address>2001:7::21/64</address>
+      </interface>
+      <interface name="eth1" net="20797">
+        <address type="mac">00:00:00:aa:00:11</address>
+        <address>10.0.8.21/24</address>
+        <address>2001:8::21/64</address>
+      </interface>
+      <interface name="eth2" net="29439">
+        <address type="mac">00:00:00:aa:00:13</address>
+        <address>10.0.9.21/24</address>
+        <address>2001:9::21/64</address>
+      </interface>
+    </Node>
+  </NetworkPlan>
+  <MotionPlan>
+    <Node name="n1">
+      <motion type="stationary">
+        <point>83,136</point>
+      </motion>
+    </Node>
+    <Node name="n2">
+      <motion type="stationary">
+        <point>337,72</point>
+      </motion>
+    </Node>
+    <Node name="n3">
+      <motion type="stationary">
+        <point>357,247</point>
+      </motion>
+    </Node>
+    <Node name="n4">
+      <motion type="stationary">
+        <point>639,179</point>
+      </motion>
+    </Node>
+    <Node name="n5">
+      <motion type="stationary">
+        <point>853,308</point>
+      </motion>
+    </Node>
+    <Node name="n6">
+      <motion type="stationary">
+        <point>591,500</point>
+      </motion>
+    </Node>
+    <Node name="n7">
+      <motion type="stationary">
+        <point>215,392</point>
+      </motion>
+    </Node>
+  </MotionPlan>
+  <ServicePlan/>
+  <CoreMetaData>
+    <SessionOptions>
+      <param name="enablesdt">1</param>
+    </SessionOptions>
+    <MetaData>
+      <param name="global_options">interface_names=no ip_addresses=yes ipv6_addresses=yes node_labels=yes link_labels=yes show_api=no background_images=no annotations=yes grid=yes traffic_start=0</param>
+      <param name="canvas c1">{name {Canvas1}}</param>
+    </MetaData>
+  </CoreMetaData>
+</Scenario>
