@@ -39,13 +39,13 @@ def dijkstra(graph, src)
     shortest[u] = true;
 
     for n in 0..NUM_NODES-1
-      if (!shortest[n] && graph[u][n] && dist[u] != Float::INFINITY && (dist[u] + graph[u][n]) < dist[n])
+      if (!shortest[n] && graph[u][n] != 0 && dist[u] != Float::INFINITY && (dist[u] + graph[u][n]) < dist[n])
         dist[n] = dist[u] + graph[u][n]
       end
     end
   end
         
-    print(dist, NUM_NODES);
+  print(dist, NUM_NODES);
 end
 
 
@@ -60,3 +60,7 @@ graph = [[0, 4, 0, 0, 0, 0, 0, 8, 0],
          [0, 0, 2, 0, 0, 0, 6, 7, 0]]
  
 dijkstra(graph, 0)
+
+
+
+  
