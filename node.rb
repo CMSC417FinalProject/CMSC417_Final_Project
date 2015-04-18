@@ -32,39 +32,42 @@ end
 #Method to return the ip connected with input node returns ip of destination
 def conn_ip(n_s, n_d)
   
-  
-  #Get lines from nta where n_s (starting node) is present
-#  n_s_ip_lines = $nodes_to_addrs.select { |line| line =~ /#{n_s}/ }
-  n_s_ip_lines = []
-  $nodes_to_addrs.each { |line| 
-    line =~ /#{n_s}\t/ 
-    n_s_ip_lines.push line
-   
+  puts "\nn_s = " + n_s + " n_d = " + n_d
+
+  n_s_ip_lines = $nodes_to_addrs.select{ |line| line =~ /#{n_s}\s/ }
+  puts "\nPRINT N_S LINES"
+  puts n_s_ip_lines
+
+
+  n_s_ip = []
+  n_s_ip_lines.each {|line|
+    n_s_ip.push line.split[1..2].join('\t')
   }
-  
-  addr_lines = $nodes_to_addrs.select{ |line| line =~ /#{n_s}\s/ }
-  puts addr_lines
 
-  puts "starting 48"
-  puts n_s_ip_lines #.split[1...2].join(' ')
-  puts "starting 49"
+  puts "\nPRINTING N_S IPs"
+  puts n_s_ip
   
-  
-  n_d_ip_lines = $nodes_to_addrs.select { |line| line =~ /#{n_d}/ }
-  
-  puts n_d_ip_lines.inspect #.split[1...2].join(' ')
-  
-  n_s_ip_lines.each {|n_s_line| n_d_ip_lines {|n_d_line| 
-    
-    
-    
-    first = destination_lines[0].split[0...1].join(' ')
-    second = destination_lines[0].split[1...2].join(' ')
 
-    
+  n_d_ip_lines = $nodes_to_addrs.select { |line| line =~ /#{n_d}\s/ }
+  puts "\nPRINTING N_D LINES"
+  puts n_d_ip_lines
+
+
+  n_d_ip = []
+  n_d_ip_lines.each {|line|
+    n_d_ip.push line.split[1..2].join('\t')
+  }
+  puts "\nPRINTING N_D IPs"
+  puts n_d_ip
+
+  n_s_ip.each{ |s_ip| 
+    n_d_ip.each{ |d_ip|
+      if ((destination_of_addr s_ip) == d_ip)
+        puts "CONNECTION WITH " + d_ip
+        return d_ip
+      end
     }
-   }
-  
+  }
 end
 
 def destination_of_addr input
@@ -137,9 +140,19 @@ neighbors.sort!
 puts "=Neighbors: "
 puts neighbors
 
-puts "starting conn_ip"
-conn_ip("n1","n2")
-puts "ending conn_ip"
+s1 = "n5"
+s2 = "n6"
+right_ip = conn_ip(s1,s2)
+puts "\nIP to open from #{s1} to #{s2} is "
+puts right_ip
+
+puts "Neighbors Connections"
+neighbors.each{ |n|
+  #right_ip = conn_ip(hostname,n)
+  #puts "\nIP to open with #{n} is "
+  #puts right_ip
+
+}
 
 
 =begin
@@ -147,8 +160,6 @@ Section 2: TCP SERVER, packet exchange and final topology cost matrix
 TO DO - DYLAN
 =end
 
-puts hostname
-puts ip_to_node(ip)
 
 class Neighbor_Packet
   
