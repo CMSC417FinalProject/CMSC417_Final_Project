@@ -48,7 +48,7 @@ node_names.each {|name|
     addresses = doc.xpath("//Node[@name = '" + name + "'][@type='PC']/interface/address")    
     addresses.each {|addr|
       if /((25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)/ =~ addr.text
-        puts "my lord and savior MeGusto" + addr.text
+        puts "TEXT: " + addr.text
         puts name
         if node_to_addr[name] == nil
           node_to_addr[name] = []

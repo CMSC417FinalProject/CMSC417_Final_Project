@@ -3,18 +3,22 @@
 PROJECT 3
 Members:
 Sarthi Andley
-Dylan
-Triana
+Dylan Zingler
+Triana M.
 =end
 
+require 'socket'
+
+# Globals
+server_port = 2000
 
 #Useful variables and methos
-$nodes_to_addrs = File.readlines('nodes-to-addrs.txt')
-$addrs_to_links = File.readlines('addrs-to-links.txt')
+$nodes_to_addrs = File.readlines(ARGV[0])
+$addrs_to_links = File.readlines(ARGV[1])
 
 #Method to returns the node connected with input addr
 def ip_to_node ip
-	#Get the lines from ntr where node is with that IP
+	#Get the lines from nta where node is with that IP
 	node_ip_lines = $nodes_to_addrs.select{ |line| line =~ /#{ip}/ }
 
 	if (node_ip_lines[0] == nil)
@@ -25,8 +29,46 @@ def ip_to_node ip
 	node_ip_lines[0].split[0...1].join(' ')
 end
 
+#Method to return the ip connected with input node returns ip of destination
+def conn_ip(n_s, n_d)
+  
+  
+  #Get lines from nta where n_s (starting node) is present
+#  n_s_ip_lines = $nodes_to_addrs.select { |line| line =~ /#{n_s}/ }
+  n_s_ip_lines = []
+  $nodes_to_addrs.each { |line| 
+    line =~ /#{n_s}\t/ 
+    n_s_ip_lines.push line
+   
+  }
+  
+  addr_lines = $nodes_to_addrs.select{ |line| line =~ /#{n_s}\s/ }
+  puts addr_lines
+
+  puts "starting 48"
+  puts n_s_ip_lines #.split[1...2].join(' ')
+  puts "starting 49"
+  
+  
+  n_d_ip_lines = $nodes_to_addrs.select { |line| line =~ /#{n_d}/ }
+  
+  puts n_d_ip_lines.inspect #.split[1...2].join(' ')
+  
+  n_s_ip_lines.each {|n_s_line| n_d_ip_lines {|n_d_line| 
+    
+    
+    
+    first = destination_lines[0].split[0...1].join(' ')
+    second = destination_lines[0].split[1...2].join(' ')
+
+    
+    }
+   }
+  
+end
+
 def destination_of_addr input
-	#Get the lines from atr with input
+	#Get the lines from atl with input
 	destination_lines = $addrs_to_links.select{ |line| line =~ /#{input}/ }
 
 	if (destination_lines[0] == nil)
@@ -95,12 +137,74 @@ neighbors.sort!
 puts "=Neighbors: "
 puts neighbors
 
+puts "starting conn_ip"
+conn_ip("n1","n2")
+puts "ending conn_ip"
 
 
 =begin
 Section 2: TCP SERVER, packet exchange and final topology cost matrix
 TO DO - DYLAN
 =end
+
+puts hostname
+puts ip_to_node(ip)
+
+class Neighbor_Packet
+  
+  def initialize(neighbors, hostname, ip)
+    @neighbors = neighbors
+    @hostname = hostname
+    @ip = ip
+  end
+  
+end
+
+def matrix builder
+  # 
+  puts "HELLO"
+end
+
+# TCP Server (***GET ME SOME NEIGHBORS (-:   )
+server = TCPServer.open(server_port)   # Socket to listen on port 2000
+
+s = Thread.new {
+loop {                          # Servers run forever
+  Thread.start(server.accept) do |client|
+    puts "CONNECTION MADE TO SERVER"
+    client.puts(Time.now.ctime) # Send the time to the client
+    client.puts "Closing the connection. Bye!"
+    client.close                # Disconnect from the client
+  end
+}
+
+}
+
+# Matrix Definition
+
+
+# TCP Packet Retrival from other Neighbors
+neighbors.each {|n|
+    
+  puts n
+  n_hostname = n
+  port = 2000
+  
+  s = TCPSocket.open(n, port)
+  
+  while line = s.gets   # Read lines from the socket
+    puts line.chop      # And print with platform line terminator
+  end
+  s.close               # Close the socket when done
+  
+  
+
+}
+
+loop {
+  puts "WELL HELLO THERE"
+  
+}
 
 
 =begin
