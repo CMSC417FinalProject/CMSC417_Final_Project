@@ -27,7 +27,7 @@ def dijkstra(graph, src)
   shortest[NUM_NODES]
      
   for i in 0..NUM_NODES-1
-    dist[i] = INT_MAX, shortest[i] = false
+    dist[i] = Float::INFINITY, shortest[i] = false
   end
 
   dist[src] = 0
