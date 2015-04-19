@@ -221,7 +221,7 @@ end
 
 
 def net_packet_builder message
-  # When a Client recives a message, this method creates network_packet object
+  # When a Client recives a message, this method creates Neighbor_Packet object
   message_arr = message.split("\n")
   
   nbors = message_arr[0].split("\t")
@@ -276,17 +276,62 @@ def matrix_merger(np_1, np_2)
   
   puts "HERE ARE THE NEIGHBORS: " + np_1.nodes_list.inspect
   
+  nD = (np_1.nodes_list + np_2.nodes_list).to_set
+  puts "THIS IS Nd: " + nD.inspect
+  
   # Check if matrixes are the same
   if np_1.nodes_list == np_1.nodes_list
     # Ensure that every in the matrix is the same
     if np_1.neighbor_matrix == np_2.neighbor_matrix
       return "matrices are equal"
     else
-      np_1.neighbor_matrix.each {||}
+      n_mat = np_1.network_matrix.clone
+      
+      # If the value is 0 then overwrite it with np_2's value
+      n_mat.each_with_index {|v, x, y| 
+        if v == 0
+          n_mat[x,y] = np_2.network_matrix[x,y]
+        end
+        
+        }
+      
+      return Neighbor_Packet.new(np_1.n_bors,np_1.h_name,np_1.i_p,n_mat)
+            
     end
     
+  else
     
+    n_mat = Matrix.build(nD.length, nD.length) {|row, col| 0 }
+      
+    # Copying of B (np_2) into N (new Network_Packet
+    n2_index_in_nD = []
+    np_2.nodes_list.each {|n2_hostname| 
+      nD_hash = Hash[nD.map.with_index.to_a] 
+      
+      n2_index_in_nD << nD_hash[n2_hostname]
+      
+      }
     
+    n2_index_in_nD.each_with_index {|x,i| 
+      n2_index_in_nD.each_with_index {|y,j|
+        n_mat[x,y] = np_2.neighbor_matrix[i,j]
+      }
+    }
+    
+    # Copying of A (np_1) into N (new Network_Packet)
+    n1_index_in_nD = []
+    np_1.nodes_list.each {|n1_hostname|
+      nD_hash = Hash[nD.map.with_index.to_a] 
+      
+      n1_index_in_nD << nD_hash[n1_hostname]
+      }
+    n1_index_in_nD.each_with_index {|x,i|
+      n1_index_in_nD.each_with_index {|y,j|
+        n_mat[x,y] = np_1.neighbor_matrix[i,j]          
+        }
+      }    
+    
+    return Neighbor_Packet.new(np_1.n_bors,np_1.h_name,np_1.i_p,n_mat)
   end
   
 end
