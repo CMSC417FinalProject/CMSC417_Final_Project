@@ -31,12 +31,12 @@ end
 
 #Method to return the ip connected with input node returns ip of destination
 def conn_ip(n_s, n_d)
-  
+  nodes_to_addrs2 = File.readlines(ARGV[0])
   puts "\nn_s = " + n_s + " n_d = " + n_d
-
-  n_s_ip_lines = $nodes_to_addrs.select{ |line| line =~ /#{n_s}\s/ }
-  puts "\nPRINT N_S LINES"
-  puts n_s_ip_lines
+  
+  n_s_ip_lines = nodes_to_addrs2.select{ |line| line =~ /#{n_s}\s/ }
+  #puts "\nPRINT N_S LINES"
+  #puts n_s_ip_lines
 
 
   n_s_ip = []
@@ -44,26 +44,26 @@ def conn_ip(n_s, n_d)
     n_s_ip.push line.split[1..2].join('\t')
   }
 
-  puts "\nPRINTING N_S IPs"
-  puts n_s_ip
+  #puts "\nPRINTING N_S IPs"
+  #puts n_s_ip
   
 
-  n_d_ip_lines = $nodes_to_addrs.select { |line| line =~ /#{n_d}\s/ }
-  puts "\nPRINTING N_D LINES"
-  puts n_d_ip_lines
+  n_d_ip_lines = nodes_to_addrs2.select { |line| line =~ /#{n_d}\s/ }
+  #puts "\nPRINTING N_D LINES"
+  #puts n_d_ip_lines
 
 
   n_d_ip = []
   n_d_ip_lines.each {|line|
     n_d_ip.push line.split[1..2].join('\t')
   }
-  puts "\nPRINTING N_D IPs"
-  puts n_d_ip
+  #puts "\nPRINTING N_D IPs"
+  #puts n_d_ip
 
   n_s_ip.each{ |s_ip| 
     n_d_ip.each{ |d_ip|
       if ((destination_of_addr s_ip) == d_ip)
-        puts "CONNECTION WITH " + d_ip
+        #puts "CONNECTION WITH " + d_ip
         return d_ip
       end
     }
@@ -140,17 +140,19 @@ neighbors.sort!
 puts "=Neighbors: "
 puts neighbors
 
-s1 = "n5"
-s2 = "n6"
-right_ip = conn_ip(s1,s2)
-puts "\nIP to open from #{s1} to #{s2} is "
-puts right_ip
+
+s1 = "n8"
+s2 = "n9"
+#right_ip = conn_ip(s1,s2)
+#puts "\nIP to open from #{s1} to #{s2} is "
+#puts right_ip
 
 puts "Neighbors Connections"
 neighbors.each{ |n|
-  #right_ip = conn_ip(hostname,n)
-  #puts "\nIP to open with #{n} is "
-  #puts right_ip
+  puts "hostname = " + hostname + " Neighbor = " + n
+  right_ip = conn_ip(hostname,n)
+  puts "\nIP to open with #{n} is "
+  puts right_ip
 
 }
 
