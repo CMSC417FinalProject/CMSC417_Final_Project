@@ -1,6 +1,7 @@
 # Members
 - Sarthi Andley
 - Dylan Zingler
+- Triana McCorkle
 
 
 
