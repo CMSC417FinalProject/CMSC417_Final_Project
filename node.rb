@@ -8,6 +8,8 @@ Triana M.
 =end
 
 require 'socket'
+require 'matrix'
+require 'set'
 
 # Globals
 server_port = 2000
@@ -15,6 +17,12 @@ server_port = 2000
 #Useful variables and methos
 $nodes_to_addrs = File.readlines(ARGV[0])
 $addrs_to_links = File.readlines(ARGV[1])
+
+class Matrix
+  def []=(row, column, value)
+    @rows[row][column] = value
+  end
+end
 
 #Method to returns the node connected with input addr
 def ip_to_node ip
@@ -141,12 +149,6 @@ puts "=Neighbors: "
 puts neighbors
 
 
-s1 = "n8"
-s2 = "n9"
-#right_ip = conn_ip(s1,s2)
-#puts "\nIP to open from #{s1} to #{s2} is "
-#puts right_ip
-
 puts "Neighbors Connections"
 neighbors.each{ |n|
   puts "hostname = " + hostname + " Neighbor = " + n
@@ -164,19 +166,93 @@ TO DO - DYLAN
 
 
 class Neighbor_Packet
+  @n_bors = []
+  @h_name = ""
+  @i_p = nil
   
-  def initialize(neighbors, hostname, ip)
-    @neighbors = neighbors
-    @hostname = hostname
-    @ip = ip
+  def initialize(n_bors, h_name, i_p, neighbor_matrix)
+    @n_bors = n_bors
+    @h_name = h_name
+    @i_p = i_p.clone
+    
+    @nodes_list = []    
+    @nodes_list = @n_bors.clone
+    @nodes_list << @h_name
+    @nodes_list.sort!
+    
+    
+    if neighbor_matrix == nil
+      @neighbor_matrix = matrix_builder(@h_name,@nodes_list)       
+    else
+      @neighbor_matrix = neighbor_matrix.clone
+    end  
+               
+  end
+    
+  
+  def to_s
+    string = ""
+    string += @n_bors.inspect + "\n"
+    string += @h_name + "\n"
+    string += @i_p + "\n"
+              
+    @nodes_list.each {|neigh| string += neigh + "\t"}
+    string += "\n"   
+    @neighbor_matrix.row_vectors.each {|row| 
+      arr = []
+      row.collect {|x| arr << x}
+      
+     
+      arr.each {|x| string +=  x.to_s + "\t"}
+      string +=  "\n"
+      
+      }
+    return string
   end
   
 end
 
-def matrix builder
-  # 
-  puts "HELLO"
+def matrix_builder(h_name, n_list)  
+  # Creates a matrix from a list of neighbors
+  mat = Matrix.build(n_list.length, n_list.length) {|row, col| 0 }
+  #puts "HOSTNAME INDEX: " + n_list.index(h_name)
+  
+  hash = Hash[n_list.map.with_index.to_a]
+  puts "HELLOEHEhEH" + hash[h_name].to_s
+  
+  # set all neighbors to one
+  mat.each_with_index do |e, row, col|
+    if row == hash[h_name] and col != hash[h_name]
+      mat[row,col] = 1
+    elsif col == hash[h_name] and row != hash[h_name]
+      mat[row,col] = 1
+    else
+      mat[row,col] = 0
+    end
+  
+  end
+  
+  return mat
 end
+
+def matrix_merger(np_1, np_2)
+  # Merges 2 packets matrices 
+  
+  puts np_1::node_list
+  puts np_2::node_list
+  
+  
+end
+
+# Network Packet for THIS NODE
+#matrix_builder neighbors
+
+node_net_packet = Neighbor_Packet.new(neighbors,hostname,ip,nil)
+puts "WHERE HERe"
+puts neighbors.inspect
+puts node_net_packet.to_s
+
+
 
 # TCP Server (***GET ME SOME NEIGHBORS (-:   )
 server = TCPServer.open(server_port)   # Socket to listen on port 2000
@@ -185,26 +261,34 @@ s = Thread.new {
 loop {                          # Servers run forever
   Thread.start(server.accept) do |client|
     puts "CONNECTION MADE TO SERVER"
-    client.puts(Time.now.ctime) # Send the time to the client
-    client.puts "Closing the connection. Bye!"
+    client.puts(node_net_packet.to_s) # Send the time to the client    
+    #client.puts "Closing the connection. Bye!"
     client.close                # Disconnect from the client
   end
 }
 
 }
 
-# Matrix Definition
 
 
 # TCP Packet Retrival from other Neighbors
+begin
 neighbors.each {|n|
+  
+  if n == hostname
+    next
+  end  
     
-  puts n
-  n_hostname = n
+  puts "IM GOING TO HOST:" + n
+  neighbor_ip = conn_ip(hostname,n)
   port = 2000
   
-  s = TCPSocket.open(n, port)
+  #puts neighbor_ip.to_s + " <--IP:Port -->" +  port.to_s
+  puts neighbor_ip.inspect
   
+  s = TCPSocket.open(neighbor_ip, port)
+  
+  puts "LINE OUTPUT"
   while line = s.gets   # Read lines from the socket
     puts line.chop      # And print with platform line terminator
   end
@@ -214,8 +298,12 @@ neighbors.each {|n|
 
 }
 
+rescue SystemCallError
+  puts "well theres a conn errror"
+end
+
 loop {
-  puts "WELL HELLO THERE"
+  
   
 }
 
