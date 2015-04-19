@@ -170,6 +170,12 @@ class Neighbor_Packet
   @h_name = ""
   @i_p = nil
   
+  attr_reader :n_bors
+  attr_reader :h_name
+  attr_reader :i_p
+  attr_reader :nodes_list
+  attr_reader :neighbor_matrix
+  
   def initialize(n_bors, h_name, i_p, neighbor_matrix)
     @n_bors = n_bors
     @h_name = h_name
@@ -192,7 +198,8 @@ class Neighbor_Packet
   
   def to_s
     string = ""
-    string += @n_bors.inspect + "\n"
+    @n_bors.each {|n| string += n + "\t"}
+    string += "\n"
     string += @h_name + "\n"
     string += @i_p + "\n"
               
@@ -211,6 +218,28 @@ class Neighbor_Packet
   end
   
 end
+
+
+def net_packet_builder message
+  # When a Client recives a message, this method creates network_packet object
+  message_arr = message.split("\n")
+  
+  nbors = message_arr[0].split("\t")
+  hname = message_arr[1]
+  i__p = message_arr[2]
+  headder = message_arr[3].split("\t")
+  
+  matrix = []
+  message_arr[4..-1].each {|line| matrix << line.split("\t")}
+  puts matrix.inspect
+  n_p = Neighbor_Packet.new(nbors,hname,i__p,Matrix.rows(matrix))
+  
+  matrix = nil
+  return n_p
+  
+end
+
+
 
 def matrix_builder(h_name, n_list)  
   # Creates a matrix from a list of neighbors
@@ -238,9 +267,27 @@ end
 def matrix_merger(np_1, np_2)
   # Merges 2 packets matrices 
   
-  puts np_1::node_list
-  puts np_2::node_list
   
+  #puts np_1.instance_variable_get(:@node_list).inspect
+  #puts np_2.instance_variable_get(:@node_list).inspect
+  
+  puts np_1.to_s
+  puts np_2.to_s  
+  
+  puts "HERE ARE THE NEIGHBORS: " + np_1.nodes_list.inspect
+  
+  # Check if matrixes are the same
+  if np_1.nodes_list == np_1.nodes_list
+    # Ensure that every in the matrix is the same
+    if np_1.neighbor_matrix == np_2.neighbor_matrix
+      return "matrices are equal"
+    else
+      np_1.neighbor_matrix.each {||}
+    end
+    
+    
+    
+  end
   
 end
 
@@ -273,30 +320,39 @@ loop {                          # Servers run forever
 
 # TCP Packet Retrival from other Neighbors
 begin
-neighbors.each {|n|
   
-  if n == hostname
-    next
-  end  
+  message = ""
+  
+  neighbors.each {|n|
     
-  puts "IM GOING TO HOST:" + n
-  neighbor_ip = conn_ip(hostname,n)
-  port = 2000
+    if n == hostname
+      next
+    end  
+      
+    message = ""
+      
+    puts "IM GOING TO HOST:" + n
+    neighbor_ip = conn_ip(hostname,n)
+    port = 2000
+    
+    #puts neighbor_ip.to_s + " <--IP:Port -->" +  port.to_s
+    puts neighbor_ip.inspect
+    
+    s = TCPSocket.open(neighbor_ip, port)
+    
+    puts "LINE OUTPUT"
+    while line = s.gets   # Read lines from the socket
+      puts line.chop      # And print with platform line terminator
+      message += line
+    end
+    s.close               # Close the socket when done
+    
+    neighbor_packet = net_packet_builder message
+    puts neighbor_packet.to_s
+    
+    matrix_merger(node_net_packet, neighbor_packet)
   
-  #puts neighbor_ip.to_s + " <--IP:Port -->" +  port.to_s
-  puts neighbor_ip.inspect
-  
-  s = TCPSocket.open(neighbor_ip, port)
-  
-  puts "LINE OUTPUT"
-  while line = s.gets   # Read lines from the socket
-    puts line.chop      # And print with platform line terminator
-  end
-  s.close               # Close the socket when done
-  
-  
-
-}
+  }
 
 rescue SystemCallError
   puts "well theres a conn errror"
