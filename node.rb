@@ -230,7 +230,14 @@ def net_packet_builder message
   headder = message_arr[3].split("\t")
   
   matrix = []
-  message_arr[4..-1].each {|line| matrix << line.split("\t")}
+  message_arr[4..-1].each {|line| 
+    
+    vals = line.split("\t")
+    v = []
+    vals.each {|x| v << x.to_i}
+    matrix << v
+    
+    }
   puts matrix.inspect
   n_p = Neighbor_Packet.new(nbors,hname,i__p,Matrix.rows(matrix))
   
@@ -281,7 +288,11 @@ def matrix_merger(np_1, np_2)
   
   # Check if matrixes are the same
   if np_1.nodes_list == np_1.nodes_list
-    # Ensure that every in the matrix is the same
+    # Ensure that every entry in the matrix is the same
+      puts "MATRICES TO MERGE"
+      puts np_2.neighbor_matrix.inspect
+      puts np_1.neighbor_matrix.inspect
+    
     if np_1.neighbor_matrix == np_2.neighbor_matrix
       return "matrices are equal"
     else
@@ -364,53 +375,87 @@ loop {                          # Servers run forever
 
 
 # TCP Packet Retrival from other Neighbors
-begin
   
-  message = ""
-  
-  neighbors.each {|n|
-    
-    if n == hostname
-      next
-    end  
-      
-    message = ""
-      
-    puts "IM GOING TO HOST:" + n
-    neighbor_ip = conn_ip(hostname,n)
-    port = 2000
-    
-    #puts neighbor_ip.to_s + " <--IP:Port -->" +  port.to_s
-    puts neighbor_ip.inspect
-    
-    s = TCPSocket.open(neighbor_ip, port)
-    
-    puts "LINE OUTPUT"
-    while line = s.gets   # Read lines from the socket
-      puts line.chop      # And print with platform line terminator
-      message += line
-    end
-    s.close               # Close the socket when done
-    
-    neighbor_packet = net_packet_builder message
-    puts neighbor_packet.to_s
-    
-    puts "THIS IS THE NEW PACKET"
-    puts matrix_merger(node_net_packet, neighbor_packet).to_s
-  
-  }
+message = ""
 
-rescue SystemCallError
-  puts "well theres a conn errror"
+matrices_equal = false
+
+while matrices_equal != true
+  begin 
+    neighbors.each {|n|
+      
+      if n == hostname
+        next
+      end  
+        
+      message = ""
+        
+      puts "IM GOING TO HOST:" + n
+      neighbor_ip = conn_ip(hostname,n)
+      port = 2000
+      
+      #puts neighbor_ip.to_s + " <--IP:Port -->" +  port.to_s
+      puts neighbor_ip.inspect
+      
+      s = TCPSocket.open(neighbor_ip, port)
+      
+      puts "LINE OUTPUT"
+      while line = s.gets   # Read lines from the socket
+        puts line.chop      # And print with platform line terminator
+        message += line
+      end
+      s.close               # Close the socket when done
+      
+      neighbor_packet = net_packet_builder message
+      puts neighbor_packet.to_s
+      
+      puts "THIS IS THE NEW PACKET"
+      
+      
+      if matrix_merger(node_net_packet, neighbor_packet) == "matrices are equal"
+        matrices_equal = true
+        puts "MATRICES ARE EQUAL!!!"
+        break
+      else
+        node_net_packet = matrix_merger(node_net_packet, neighbor_packet)
+      end          
+      puts node_net_packet.to_s
+      
+      #node_net_packet = new_packet
+    
+    }
+  
+  rescue SystemCallError
+   puts "well theres a conn errror"
+   sleep(1)
+  end
+  
 end
 
-loop {
-  
-  
-}
 
 
 =begin
 Section 3: Dikstra's implementation
 #TO DO - TRIANA
 =end
+
+
+node_list_hash = Hash[node_net_packet.nodes_list.map.with_index.to_a]
+host_index = node_list_hash[node_net_packet.h_name]
+
+puts "ENDING OF PROGRAM"
+puts host_index
+puts node_net_packet.neighbor_matrix.to_a.inspect
+puts Dir.pwd
+system("ruby dijkstra.rb #{node_net_packet.neighbor_matrix.to_a.inspect} #{host_index}")
+
+
+
+
+
+
+
+
+
+
+
