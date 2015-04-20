@@ -1,4 +1,10 @@
-NUM_NODES = ARGV[0].to_i
+require 'json'
+
+GRAPH = ARGV[0]
+graph = JSON.parse(GRAPH)
+NUM_NODES = graph.length
+HOST = ARGV[1].to_i
+
 
 def min_dist(dist, shortest)
   min = Float::INFINITY
@@ -16,10 +22,11 @@ end
 
 
 def print(dist, n)
-  puts "Vertex  Distance from source\n"
+  str = "Destination  Distance\n"
   for i in 0..NUM_NODES-1
-    puts "#{i}\t\t#{dist[i]}\n"
+    str += "    #{i}\t\t#{dist[i]}\n"
   end
+  return str
 end
 
 
@@ -44,23 +51,11 @@ def dijkstra(graph, src)
       end
     end
   end
-        
-  print(dist, NUM_NODES);
+
+  return print(dist, NUM_NODES)
 end
 
-
-graph = [[0, 4, 0, 0, 0, 0, 0, 8, 0],
-         [4, 0, 8, 0, 0, 0, 0, 11, 0],
-         [0, 8, 0, 7, 0, 4, 0, 0, 2],
-         [0, 0, 7, 0, 9, 14, 0, 0, 0],
-         [0, 0, 0, 9, 0, 10, 0, 0, 0],
-         [0, 0, 4, 0, 10, 0, 2, 0, 0],
-         [0, 0, 0, 14, 0, 2, 0, 1, 6],
-         [8, 11, 0, 0, 0, 0, 1, 0, 7],
-         [0, 0, 2, 0, 0, 0, 6, 7, 0]]
- 
-dijkstra(graph, 0)
-
+File.open('dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, 0)) }
 
 
   
