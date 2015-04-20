@@ -503,6 +503,6 @@ def dijkstra(graph, src)
   return print(dist, NUM_NODES)
 end
 
-File.open('dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, 0)) }
+File.open(node_net_packet.h_name.to_s+'_dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, 0)) }
 
 
