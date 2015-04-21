@@ -41,7 +41,7 @@ end
 #Method to return the ip connected with input node returns ip of destination
 def conn_ip(n_s, n_d)
   nodes_to_addrs2 = File.readlines(ARGV[0])
-  puts "\nn_s = " + n_s + " n_d = " + n_d
+  #puts "\nn_s = " + n_s + " n_d = " + n_d
   
   n_s_ip_lines = nodes_to_addrs2.select{ |line| line =~ /#{n_s}\s/ }
   #puts "\nPRINT N_S LINES"
@@ -177,16 +177,19 @@ class Neighbor_Packet
   attr_reader :nodes_list
   attr_reader :neighbor_matrix
   
-  def initialize(n_bors, h_name, i_p, neighbor_matrix)
+  def initialize(n_bors, h_name, i_p, neighbor_matrix, node_l)
     @n_bors = n_bors
     @h_name = h_name
     @i_p = i_p.clone
     
-    @nodes_list = []    
-    @nodes_list = @n_bors.clone
-    @nodes_list << @h_name
-    @nodes_list.sort!
-    
+    if node_l == nil
+      @nodes_list = []    
+      @nodes_list = @n_bors.clone
+      @nodes_list << @h_name
+      @nodes_list.sort!
+    else
+      @nodes_list = node_l
+    end
     
     if neighbor_matrix == nil
       @neighbor_matrix = matrix_builder(@h_name,@nodes_list)       
@@ -239,8 +242,8 @@ def net_packet_builder message
     matrix << v
     
     }
-  puts matrix.inspect
-  n_p = Neighbor_Packet.new(nbors,hname,i__p,Matrix.rows(matrix))
+  #puts matrix.inspect
+  n_p = Neighbor_Packet.new(nbors,hname,i__p,Matrix.rows(matrix), headder)
   
   matrix = nil
   return n_p
@@ -255,7 +258,7 @@ def matrix_builder(h_name, n_list)
   #puts "HOSTNAME INDEX: " + n_list.index(h_name)
   
   hash = Hash[n_list.map.with_index.to_a]
-  puts "HELLOEHEhEH" + hash[h_name].to_s
+  #puts "HELLOEHEhEH" + hash[h_name].to_s
   
   # set all neighbors to one
   mat.each_with_index do |e, row, col|
@@ -275,23 +278,29 @@ end
 def matrix_merger(np_1, np_2)
   # Merges 2 packets matrices 
   
+  #MATRICES TO MERGE
+  #Matrix[[0, 1, 1], [1, 0, 0], [1, 0, 0]]
+  #Matrix[[0, 1, 0, 0], [1, 0, 1, 1], [0, 1, 0, 0], [0, 1, 0, 0]]
+  
   
   #puts np_1.instance_variable_get(:@node_list).inspect
   #puts np_2.instance_variable_get(:@node_list).inspect
   
-  puts np_1.to_s
-  puts np_2.to_s  
+  #puts np_1.to_s
+  #puts np_2.to_s  
   
-  puts "HERE ARE THE NEIGHBORS: " + np_1.nodes_list.inspect
+  #puts "HERE ARE THE NEIGHBORS: " + np_1.nodes_list.inspect
   
-  nD = (np_1.nodes_list + np_2.nodes_list).to_set
+  nD = (np_1.nodes_list + np_2.nodes_list).to_set.to_a
   puts "THIS IS Nd: " + nD.inspect
   
   # Check if matrixes are the same
-  if np_1.nodes_list == np_1.nodes_list
+  if np_1.nodes_list == np_2.nodes_list
     # Ensure that every entry in the matrix is the same
       puts "MATRICES TO MERGE"
+      puts np_2.nodes_list.inspect
       puts np_2.neighbor_matrix.inspect
+      puts np_1.nodes_list.inspect
       puts np_1.neighbor_matrix.inspect
     
     if np_1.neighbor_matrix == np_2.neighbor_matrix
@@ -307,43 +316,62 @@ def matrix_merger(np_1, np_2)
         
         }
       
-      return Neighbor_Packet.new(np_1.n_bors,np_1.h_name,np_1.i_p,n_mat)
+      puts "MERGED MATRIX"
+      puts n_mat.inspect
+      return Neighbor_Packet.new(np_1.n_bors,np_1.h_name,np_1.i_p,n_mat, nD)
             
     end
     
   else
     
-    n_mat = Matrix.build(nD.length, nD.length) {|row, col| 0 }
+    
+    puts "MATRICES TO MERGE"
+    puts np_2.nodes_list.inspect
+    puts np_2.neighbor_matrix.inspect
+    puts np_1.nodes_list.inspect
+    puts np_1.neighbor_matrix.inspect
+    
+    n_mat = Matrix.zero(nD.length)
       
-    # Copying of B (np_2) into N (new Network_Packet
-    n2_index_in_nD = []
+    # Copying of B (np_2) into N (new Network_Packet)
+    n2_index_in_nD = [] # Hostname mappings B to N
     np_2.nodes_list.each {|n2_hostname| 
       nD_hash = Hash[nD.map.with_index.to_a] 
-      
+      #nD.find_index
       n2_index_in_nD << nD_hash[n2_hostname]
       
       }
+    
+    puts "KEY MAPPINGS: N2" + Hash[n2_index_in_nD.map.with_index.to_a].inspect
     
     n2_index_in_nD.each_with_index {|x,i| 
       n2_index_in_nD.each_with_index {|y,j|
         n_mat[x,y] = np_2.neighbor_matrix[i,j]
       }
+    
+    puts "B MATRIX IS NOW COPIED INTO N MATRIX"
+    puts n_mat.inspect
+      
     }
     
     # Copying of A (np_1) into N (new Network_Packet)
-    n1_index_in_nD = []
+    n1_index_in_nD = [] # Hostname mappings A to N
     np_1.nodes_list.each {|n1_hostname|
       nD_hash = Hash[nD.map.with_index.to_a] 
       
       n1_index_in_nD << nD_hash[n1_hostname]
       }
+      
+    puts "KEY MAPPINGS N1: " + Hash[n1_index_in_nD.map.with_index.to_a].inspect  
     n1_index_in_nD.each_with_index {|x,i|
       n1_index_in_nD.each_with_index {|y,j|
         n_mat[x,y] = np_1.neighbor_matrix[i,j]          
         }
       }    
     
-    return Neighbor_Packet.new(np_1.n_bors,np_1.h_name,np_1.i_p,n_mat)
+    puts "MERGED MATRIX"
+    puts n_mat.inspect
+    return Neighbor_Packet.new(np_1.n_bors,np_1.h_name,np_1.i_p,n_mat, nD)
   end
   
 end
@@ -351,10 +379,10 @@ end
 # Network Packet for THIS NODE
 #matrix_builder neighbors
 
-node_net_packet = Neighbor_Packet.new(neighbors,hostname,ip,nil)
-puts "WHERE HERe"
-puts neighbors.inspect
-puts node_net_packet.to_s
+node_net_packet = Neighbor_Packet.new(neighbors,hostname,ip,nil, nil)
+#puts "WHERE HERe"
+#puts neighbors.inspect
+#puts node_net_packet.to_s
 
 
 
@@ -383,12 +411,18 @@ matrices_equal = false
 
 while matrices_equal != true
   begin 
+    
+    count = 0
+    
     neighbors.each {|n|
+      
+      count += 1
       
       if n == hostname
         next
-      end  
-        
+      end 
+      
+
       message = ""
         
       puts "IM GOING TO HOST:" + n
@@ -408,29 +442,37 @@ while matrices_equal != true
       s.close               # Close the socket when done
       
       neighbor_packet = net_packet_builder message
-      puts neighbor_packet.to_s
+      #puts neighbor_packet.to_s
       
-      puts "THIS IS THE NEW PACKET"
+      #puts "THIS IS THE NEW PACKET"
       
       
       if matrix_merger(node_net_packet, neighbor_packet) == "matrices are equal"
         matrices_equal = true
         puts "MATRICES ARE EQUAL!!!"
-        break
       else
         node_net_packet = matrix_merger(node_net_packet, neighbor_packet)
       end          
       puts node_net_packet.to_s
-      
+           
       #node_net_packet = new_packet
+      if matrices_equal == false
+        break
+      end 
+        
     
-    }
+    } # End of neighbors
+    
+    if count == neighbors.length
+      
+    end
   
   rescue SystemCallError
-   puts "well theres a conn errror"
+   
+   puts "CONNECTION ERROR: PLEASE HOLD WHILE TRYING TO CONNECT"
    sleep(1)
   end
-  
+  sleep(1)
 end
 
 
@@ -505,4 +547,6 @@ end
 
 File.open(node_net_packet.h_name.to_s+'_dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, 0)) }
 
-
+loop {
+  
+}
