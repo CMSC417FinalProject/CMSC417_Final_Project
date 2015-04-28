@@ -163,7 +163,123 @@ neighbors.each{ |n|
 =begin
 Section 2: TCP SERVER, packet exchange and final topology cost matrix
 TO DO - DYLAN
+###########################################################################################################
 =end
+
+class Node
+  
+  attr_reader :self_neighbor_packet
+  attr_reader :mutex
+  attr_reader :neighbor_packets
+   
+  def initialize(np)
+    @self_neighbor_packet = np
+    @mutex = Mutex.new
+    @neighbor_packets = []
+    
+    
+    
+    
+    update_neighbor_packets
+  end
+  
+  def merge_neighbor_packets
+    # Merges all neighbor information
+    @neighbor_packets.each { |x|    
+        puts "Matrix Before Merge with " + x.h_name + " :" + @self_neighbor_packet.neighbor_matrix.inspect  
+        @self_neighbor_packet = matrix_merger(@self_neighbor_packet, x)             
+        puts "Matrix After Merge :" + @self_neighbor_packet.neighbor_matrix.inspect   
+    }    
+  end
+  
+  def update_neighbor_packets
+    # Thread Safe get of all the neighbor_packets
+    
+    client_threads = []
+    @neighbor_packets = []
+    
+    @self_neighbor_packet.n_bors.each { |n|
+    puts "NEIGHBORS of your packet: " + @self_neighbor_packet.n_bors.to_s
+      
+      puts "WOWOWOWO" + n.to_s
+      
+      s = Thread.new {
+        received_packet = false
+        
+        while not received_packet
+          
+          # Try Connection 
+          begin
+            message = ""
+        
+            puts "IM GOING TO HOST:" + n
+            neighbor_ip = conn_ip(@self_neighbor_packet.h_name,n)
+            port = 2000                     
+            puts neighbor_ip.inspect
+           
+            a = TCPSocket.open(neighbor_ip, port)
+           
+            while line = a.gets
+              puts line.chop
+              message += line
+            end
+            a.close
+            
+            neighbor_packet = net_packet_builder message
+            
+            @mutex.synchronize {
+              puts "Neighbor Packets: " + @neighbor_packets.inspect
+              @neighbor_packets << neighbor_packet
+              puts "Neighbor Packets: " + @neighbor_packets.to_s
+            }
+           
+            received_packet = true
+            
+          rescue SystemCallError            
+            puts "CONNECTION ERROR: Could not Connect to ADDRESS " + n
+            sleep(1)
+          end
+          
+          
+        end               
+        
+      }
+      
+      client_threads << s
+      
+      client_threads.each {|c|
+        c.join        
+      }
+      
+      puts "ALL Neighbor Packets Received"
+      
+      
+    }
+
+  end
+  
+  def check_matrices
+    # Checks if all matrices are the same    
+    neighbor_same = true # assume neighbors are the same
+    
+    @neighbor_packets.each {|np_2|      
+      
+      puts "CHECKING MATRICIES ####################################"
+      puts "SELF MATRIX:" + @self_neighbor_packet.neighbor_matrix.to_s
+      puts "NEIGHBOR MATRIX:" + np_2.neighbor_matrix.to_s
+      
+      if @self_neighbor_packet.neighbor_matrix != np_2.neighbor_matrix
+        neighbor_same = false
+        break
+      end      
+    }
+      
+    return neighbor_same      
+  end
+  
+  
+end
+
 
 
 class Neighbor_Packet
@@ -304,7 +420,7 @@ def matrix_merger(np_1, np_2)
       puts np_1.neighbor_matrix.inspect
     
     if np_1.neighbor_matrix == np_2.neighbor_matrix
-      return "matrices are equal"
+      return np_1
     else
       n_mat = np_1.neighbor_matrix.clone
       
@@ -385,23 +501,61 @@ node_net_packet = Neighbor_Packet.new(neighbors,hostname,ip,nil, nil)
 #puts node_net_packet.to_s
 
 
+#-------------------------------------------------------------------------------------------------
+# Generating Network Topology
+#-------------------------------------------------------------------------------------------------
+
+
+puts "HERE IS YOUR PACKET NOW"
+puts node_net_packet.to_s
 
 # TCP Server (***GET ME SOME NEIGHBORS (-:   )
 server = TCPServer.open(server_port)   # Socket to listen on port 2000
 
 s = Thread.new {
-loop {                          # Servers run forever
-  Thread.start(server.accept) do |client|
-    puts "CONNECTION MADE TO SERVER"
-    client.puts(node_net_packet.to_s) # Send the time to the client    
-    #client.puts "Closing the connection. Bye!"
-    client.close                # Disconnect from the client
-  end
+  loop {                          # Servers run forever
+    Thread.start(server.accept) do |client|
+      puts "CONNECTION MADE TO SERVER"
+      client.puts(node_net_packet.to_s) # Send the time to the client    
+      #client.puts "Closing the connection. Bye!"
+      client.close                # Disconnect from the client
+    end
+  }
 }
 
-}
+
+node = Node.new(node_net_packet)
+
+node.update_neighbor_packets
+
+node.merge_neighbor_packets
+
+node_net_packet = node.self_neighbor_packet
+
+while node.check_matrices != true
+  
+  
+  node.update_neighbor_packets
+
+  node.merge_neighbor_packets
+  
+  node_net_packet = node.self_neighbor_packet
+
+  
+  sleep(1)
+  
+end
+
+puts "MATRICES SHOULD BE EQUAL NOW"
+puts node.self_neighbor_packet
 
 
+#-------------------------------------------------------------------------------------------------
+
+
+
+
+=begin
 
 # TCP Packet Retrival from other Neighbors
   
@@ -447,7 +601,7 @@ while matrices_equal != true
       #puts "THIS IS THE NEW PACKET"
       
       
-      if matrix_merger(node_net_packet, neighbor_packet) == "matrices are equal"
+      if matrix_merger(node_net_packet, neighbor_packet) == node_net_packet
         matrices_equal = true
         puts "MATRICES ARE EQUAL!!!"
       else
@@ -475,11 +629,12 @@ while matrices_equal != true
   sleep(1)
 end
 
-
+=end
 
 =begin
 Section 3: Dikstra's implementation
 #TO DO - TRIANA
+#########################################################################################################
 =end
 
 
