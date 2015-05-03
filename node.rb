@@ -185,11 +185,13 @@ class Node
   attr_reader :self_neighbor_packet
   attr_reader :mutex
   attr_reader :neighbor_packets
+  attr_reader :sequence_number
    
   def initialize(np)
     @self_neighbor_packet = np
     @mutex = Mutex.new
     @neighbor_packets = []
+    @sequence_number = -1
     
     
     
@@ -509,7 +511,6 @@ end
 # Network Packet for THIS NODE
 #matrix_builder neighbors
 
-node_net_packet = Neighbor_Packet.new(neighbors,hostname,ip,nil, nil)
 #puts "WHERE HERe"
 #puts neighbors.inspect
 #puts node_net_packet.to_s
@@ -518,7 +519,8 @@ node_net_packet = Neighbor_Packet.new(neighbors,hostname,ip,nil, nil)
 #-------------------------------------------------------------------------------------------------
 # Generating Network Topology
 #-------------------------------------------------------------------------------------------------
-
+neighbors = neighbors.sort
+node_net_packet = Neighbor_Packet.new(neighbors,hostname,ip,nil, nil)
 
 puts "HERE IS YOUR PACKET NOW"
 puts node_net_packet.to_s
