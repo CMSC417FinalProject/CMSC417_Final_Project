@@ -34,7 +34,7 @@ def get_cost_from_ip (ip1,ip2)
   ip_substring = ip1.concat(",").concat(ip2)
   cost_lines = $costs.select{ |line| line =~ /^#{ip_substring}/}
   if (cost_lines[0] == nil)
-    return nil
+    return 0
   end
   c = cost_lines[0].split(',')
   return c[2]
@@ -725,9 +725,9 @@ end
 Section 3: Dikstra's implementation
 #TO DO - TRIANA
 #########################################################################################################
+=end
 
-
-
+=begin
 node_list_hash = Hash[node_net_packet.nodes_list.map.with_index.to_a]
 host_index = node_list_hash[node_net_packet.h_name]
 
@@ -737,12 +737,16 @@ puts node_net_packet.neighbor_matrix.to_a.inspect
 puts Dir.pwd
 
 graph = node_net_packet.neighbor_matrix.to_a
-NUM_NODES = graph.length
-HOST = host_index
+=end
 
+graph = cost
+#NUM_NODES = graph.length
+NUM_NODES = num_of_nodes
+#HOST = host_index
+PositiveInfinity = +1.0/0.0 
 
 def min_dist(dist, shortest)
-  min = Float::INFINITY
+  min = PositiveInfinity
   min_index = -1
   
   for n in 0..NUM_NODES - 1
@@ -770,7 +774,7 @@ def dijkstra(graph, src)
   shortest = []
   
   for i in 0..(NUM_NODES-1)
-    dist[i] = Float::INFINITY
+    dist[i] = PositiveInfinity
     shortest[i] = false
   end
 
@@ -779,9 +783,14 @@ def dijkstra(graph, src)
   for count in 0..NUM_NODES-2
     u = min_dist(dist, shortest);
     shortest[u] = true;
-
     for n in 0..NUM_NODES-1
-      if (!shortest[n] && graph[u][n] != 0 && dist[u] != Float::INFINITY && (dist[u] + graph[u][n]) < dist[n])
+=begin
+          puts "dist[u] = "
+          puts dist[u].inpect
+          puts "graph[u][n] = "
+          puts graph[u][n].inspect
+=end
+      if (!shortest[n] && graph[u][n] != 0 && dist[u] != PositiveInfinity && (dist[u] + graph[u][n]) < dist[n])
         dist[n] = dist[u] + graph[u][n]
       end
     end
@@ -790,9 +799,8 @@ def dijkstra(graph, src)
   return print(dist, NUM_NODES)
 end
 
-File.open(node_net_packet.h_name.to_s+'_dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, 0)) }
+File.open(hostname+'_dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, 0)) }
 
 loop {
   
 }
-=end
