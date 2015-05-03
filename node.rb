@@ -10,7 +10,7 @@ Triana M.
 require 'socket'
 require 'matrix'
 require 'set'
-require 'json'
+#require 'json'
 
 # Globals
 server_port = 2000
@@ -18,6 +18,8 @@ server_port = 2000
 #Useful variables and methos
 $nodes_to_addrs = File.readlines(ARGV[0])
 $addrs_to_links = File.readlines(ARGV[1])
+$costs = File.readlines("costs.txt", 'r')
+$costs = $costs[0]
 
 class Matrix
   def []=(row, column, value)
@@ -26,6 +28,22 @@ class Matrix
 end
 
 #Method to returns the node connected with input addr
+
+def get_cost_from_ip (ip1,ip2)
+  #get the cost betweent the 2 ips reading from the text file produced by gen_weights
+  ip_substring = ip1.concat(",").concat(ip2)
+  cost_lines = $costs.select{ |line| line =~ /^#{ip_substring}/}
+  if (cost_lines[0] == nil)
+    return nil
+  end
+  c = cost_lines[0].split(',')
+  return c[2]
+end
+
+#10.0.11.20,10.0.11.21,2,44
+#print "=Cost: "
+#puts get_cost("10.0.11.20", "10.0.11.21")
+
 def ip_to_node ip
   #Get the lines from nta where node is with that IP
   node_ip_lines = $nodes_to_addrs.select{ |line| line =~ /#{ip}/ }
@@ -36,6 +54,24 @@ def ip_to_node ip
 
   #Remove the IP and whitespace from string
   node_ip_lines[0].split[0...1].join(' ')
+end
+
+def destination_of_addr input
+  #Get the lines from atl with input
+  destination_lines = $addrs_to_links.select{ |line| line =~ /#{input}/ }
+
+  if (destination_lines[0] == nil)
+    puts "ERROR: Could not find the destination link from input adderess in addrs_to_links.txt file"
+  end
+  #Remove the original address and whitespace from the line 
+  first = destination_lines[0].split[0...1].join(' ')
+  second = destination_lines[0].split[1...2].join(' ')
+
+  if (first == input)
+    return second
+  else
+    return first
+  end
 end
 
 #Method to return the ip connected with input node returns ip of destination
@@ -79,23 +115,51 @@ def conn_ip(n_s, n_d)
   }
 end
 
-def destination_of_addr input
-  #Get the lines from atl with input
-  destination_lines = $addrs_to_links.select{ |line| line =~ /#{input}/ }
 
-  if (destination_lines[0] == nil)
-    puts "ERROR: Could not find the destination link from input adderess in addrs_to_links.txt file"
-  end
-  #Remove the original address and whitespace from the line 
-  first = destination_lines[0].split[0...1].join(' ')
-  second = destination_lines[0].split[1...2].join(' ')
 
-  if (first == input)
-    return second
-  else
-    return first
-  end
+def get_cost(n_s, n_d)
+  nodes_to_addrs2 = File.readlines(ARGV[0])
+  #puts "\nn_s = " + n_s + " n_d = " + n_d
+  
+  n_s_ip_lines = nodes_to_addrs2.select{ |line| line =~ /#{n_s}\s/ }
+  #puts "\nPRINT N_S LINES"
+  #puts n_s_ip_lines
+
+
+  n_s_ip = []
+  n_s_ip_lines.each {|line|
+    n_s_ip.push line.split[1..2].join('\t')
+  }
+
+  #puts "\nPRINTING N_S IPs"
+  #puts n_s_ip
+  
+
+  n_d_ip_lines = nodes_to_addrs2.select { |line| line =~ /#{n_d}\s/ }
+  #puts "\nPRINTING N_D LINES"
+  #puts n_d_ip_lines
+
+
+  n_d_ip = []
+  n_d_ip_lines.each {|line|
+    n_d_ip.push line.split[1..2].join('\t')
+  }
+  #puts "\nPRINTING N_D IPs"
+  #puts n_d_ip
+  ip1 = ""
+  ip2 = ""
+  n_s_ip.each{ |s_ip| 
+    n_d_ip.each{ |d_ip|
+      if ((destination_of_addr s_ip) == d_ip)
+        #puts "CONNECTION WITH " + d_ip
+        ip1.concat("#{s_ip}")
+        ip2.concat("#{d_ip}")
+      end
+    }
+  }
+  get_cost_from_ip(ip1, ip2)
 end
+
 
 =begin
 Retrieve neighbors of the node
@@ -112,15 +176,25 @@ nta.each{ |line|
     list_of_nodes.push(n)
 }
 list_of_nodes = (list_of_nodes.uniq).sort
+num_of_nodes = list_of_nodes.count
 
-node_ip_lines = $nodes_to_addrs.select{ |line| line =~ /#{ip}/ }
-if (node_ip_lines[0] == nil)
-    puts "ERROR: Could not find the IP = #{ip} in the nodes_to_addrs.txt file"
+cost = Array.new(num_of_nodes) { Array.new(num_of_nodes) {nil}}
+for i in 0..(num_of_nodes-1)
+  n_s = list_of_nodes[i]
+   for j in 0..(num_of_nodes-1)
+    n_d = list_of_nodes[j]
+    c = get_cost(n_s, n_d)
+    cost[i][j] = c 
+   end
 end
-
-  #Remove the IP and whitespace from string
-  node_ip_lines[0].split[0...1].join(' ')
-
+puts "Cost Matrix: "
+puts cost.inspect
+=begin
+print "Connections n1 & n2 : "
+puts get_cost("n1","n2").inspect
+puts "end"
+=end
+#puts cost.inspect
 #Run ifconfig command
 ifconfig = `ifconfig`
 
@@ -160,10 +234,10 @@ addr_lines.each{ |line|
 neighbors.sort!
 
 
-puts "=Neighbors: "
-puts neighbors
+#puts "=Neighbors: "
+#puts neighbors
 
-
+=begin
 puts "Neighbors Connections"
 neighbors.each{ |n|
   puts "hostname = " + hostname + " Neighbor = " + n
@@ -172,13 +246,13 @@ neighbors.each{ |n|
   puts right_ip
 
 }
-
+=end
 
 =begin
 Section 2: TCP SERVER, packet exchange and final topology cost matrix
 TO DO - DYLAN
 ###########################################################################################################
-=end
+
 
 class Node
   
@@ -567,7 +641,7 @@ puts node.self_neighbor_packet
 
 
 #-------------------------------------------------------------------------------------------------
-
+=end
 
 
 
@@ -651,7 +725,7 @@ end
 Section 3: Dikstra's implementation
 #TO DO - TRIANA
 #########################################################################################################
-=end
+
 
 
 node_list_hash = Hash[node_net_packet.nodes_list.map.with_index.to_a]
@@ -721,3 +795,4 @@ File.open(node_net_packet.h_name.to_s+'_dijkstra.csv', 'w') { |file| file.write(
 loop {
   
 }
+=end
