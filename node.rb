@@ -21,6 +21,10 @@ $addrs_to_links = File.readlines(ARGV[1])
 $costs = File.readlines("costs.txt", 'r')
 $costs = $costs[0]
 
+
+$sequence_number = 0
+
+
 class Matrix
   def []=(row, column, value)
     @rows[row][column] = value
@@ -37,7 +41,8 @@ def get_cost_from_ip (ip1,ip2)
     return 0
   end
   c = cost_lines[0].split(',')
-  return c[2]
+  $sequence_number = c[3].to_i
+  return c[2].to_i
 end
 
 #10.0.11.20,10.0.11.21,2,44
@@ -187,6 +192,8 @@ for i in 0..(num_of_nodes-1)
     cost[i][j] = c 
    end
 end
+puts "Sequence number from costs file: #{$sequence_number}"
+
 puts "Cost Matrix: "
 puts cost.inspect
 =begin
