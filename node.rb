@@ -105,7 +105,21 @@ Retrieve neighbors of the node
 =end
 
 
+nta = File.readlines(ARGV[0])
+list_of_nodes = []
+nta.each{ |line| 
+    n = line.split[0...1].join(' ')
+    list_of_nodes.push(n)
+}
+list_of_nodes = (list_of_nodes.uniq).sort
 
+node_ip_lines = $nodes_to_addrs.select{ |line| line =~ /#{ip}/ }
+if (node_ip_lines[0] == nil)
+    puts "ERROR: Could not find the IP = #{ip} in the nodes_to_addrs.txt file"
+end
+
+  #Remove the IP and whitespace from string
+  node_ip_lines[0].split[0...1].join(' ')
 
 #Run ifconfig command
 ifconfig = `ifconfig`
