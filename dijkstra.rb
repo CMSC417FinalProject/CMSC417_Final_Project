@@ -24,7 +24,7 @@ end
 def print(dist, prev, n)
   str = "Destination  Distance  Previous\n"
   for i in 0..NUM_NODES-1
-    str += "     #{i}\t\t#{dist[i]}\t  #{prev[i]}\n"
+    str += "\t\t#{i}\t\t\t#{dist[i]}\t\t\t#{prev[i]}\n"
   end
   return str
 end
@@ -60,7 +60,6 @@ def dijkstra(graph, src)
   return print(dist, prev, NUM_NODES)
 end
 
-puts dijkstra(graph,0)
 File.open('dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, 0)) }
 
 
