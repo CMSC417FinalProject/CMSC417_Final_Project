@@ -21,25 +21,29 @@ def min_dist(dist, shortest)
 end
 
 
-def print(dist, n)
-  str = "Destination  Distance\n"
+def print(dist, prev, n)
+  str = "Destination  Distance  Previous\n"
   for i in 0..NUM_NODES-1
-    str += "    #{i}\t\t#{dist[i]}\n"
+    str += "     #{i}\t\t#{dist[i]}\t  #{prev[i]}\n"
   end
   return str
 end
 
 
 def dijkstra(graph, src)
+
   dist = []
   shortest = []
+  prev = []
   
   for i in 0..(NUM_NODES-1)
     dist[i] = Float::INFINITY
     shortest[i] = false
+    prev[i] = nil
   end
 
   dist[src] = 0
+  prev[src] = nil
 
   for count in 0..NUM_NODES-2
     u = min_dist(dist, shortest);
@@ -48,13 +52,15 @@ def dijkstra(graph, src)
     for n in 0..NUM_NODES-1
       if (!shortest[n] && graph[u][n] != 0 && dist[u] != Float::INFINITY && (dist[u] + graph[u][n]) < dist[n])
         dist[n] = dist[u] + graph[u][n]
+        prev[n] = u
       end
     end
   end
 
-  return print(dist, NUM_NODES)
+  return print(dist, prev, NUM_NODES)
 end
 
+puts dijkstra(graph,0)
 File.open('dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, 0)) }
 
 
