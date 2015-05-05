@@ -10,6 +10,7 @@ Triana M.
 require 'socket'
 require 'matrix'
 require 'set'
+require 'fileutils'
 #require 'json'
 
 # Globals
@@ -18,7 +19,7 @@ server_port = 2000
 #Useful variables and methos
 $nodes_to_addrs = File.readlines(ARGV[0])
 $addrs_to_links = File.readlines(ARGV[1])
-$costs = File.readlines("costs.txt", 'r')
+$costs = File.readlines("fourline-costs.txt", 'r')
 $costs = $costs[0]
 
 
@@ -812,9 +813,17 @@ def dijkstra(graph, src)
   return printer(dist, prev)
 end
 
-File.open(hostname+'_dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, $host_index)) }
+dirname = File.dirname('Dijksta_files')
 
-$dijkstra_read = File.readlines(hostname+'_dijkstra.csv', 'r')
+FileUtils.mkdir_p('Dijksta_files')
+
+
+
+#FileUtils.mkdir_p 'Dijksta_files'
+#some_path = 
+File.open('Dijksta_files/'+hostname+'_dijkstra.csv', 'w+') { |file| file.write(dijkstra(graph, $host_index)) }
+
+$dijkstra_read = File.readlines('Dijksta_files/'+hostname+'_dijkstra.csv', 'r')
 $dijkstra_result = $dijkstra_read[0].split("\n")
 
 $path = Array.new(num_of_nodes){[]}
