@@ -18,7 +18,7 @@ server_port = 2000
 #Useful variables and methos
 $nodes_to_addrs = File.readlines(ARGV[0])
 $addrs_to_links = File.readlines(ARGV[1])
-$costs = File.readlines("costs.txt", 'r')
+$costs = File.readlines("triangle-costs.txt", 'r')
 $costs = $costs[0]
 
 
@@ -175,19 +175,20 @@ Retrieve neighbors of the node
 
 
 nta = File.readlines(ARGV[0])
-list_of_nodes = []
+$list_of_nodes = []
 nta.each{ |line| 
     n = line.split[0...1].join(' ')
-    list_of_nodes.push(n)
+    $list_of_nodes.push(n)
 }
-list_of_nodes = (list_of_nodes.uniq).sort
-num_of_nodes = list_of_nodes.count
+$list_of_nodes = ($list_of_nodes.uniq).sort
+
+num_of_nodes = $list_of_nodes.count
 
 cost = Array.new(num_of_nodes) { Array.new(num_of_nodes) {nil}}
 for i in 0..(num_of_nodes-1)
-  n_s = list_of_nodes[i]
+  n_s = $list_of_nodes[i]
    for j in 0..(num_of_nodes-1)
-    n_d = list_of_nodes[j]
+    n_d = $list_of_nodes[j]
     c = get_cost(n_s, n_d)
     cost[i][j] = c 
    end
@@ -218,8 +219,11 @@ ip = inet_addr[10..-1]
 
 #Get the hostname from IP
 hostname = ip_to_node(ip)
-
+$host_index = $list_of_nodes.index(hostname)
 puts "=Hostname: #{hostname}"
+print "=Node list : "
+puts $list_of_nodes.inspect
+puts "=Index: #{$host_index}"
 
 #Addresses connected to the hostname
 addr_lines = $nodes_to_addrs.select{ |line| line =~ /#{hostname}\s/ }
@@ -736,10 +740,10 @@ Section 3: Dikstra's implementation
 
 =begin
 node_list_hash = Hash[node_net_packet.nodes_list.map.with_index.to_a]
-host_index = node_list_hash[node_net_packet.h_name]
+$host_index = node_list_hash[node_net_packet.h_name]
 
 puts "ENDING OF PROGRAM"
-puts host_index
+puts $host_index
 puts node_net_packet.neighbor_matrix.to_a.inspect
 puts Dir.pwd
 
@@ -749,7 +753,7 @@ graph = node_net_packet.neighbor_matrix.to_a
 graph = cost
 #NUM_NODES = graph.length
 NUM_NODES = num_of_nodes
-#HOST = host_index
+#HOST = $host_index
 PositiveInfinity = +1.0/0.0 
 
 def min_dist(dist, shortest)
@@ -767,10 +771,15 @@ def min_dist(dist, shortest)
 end
 
 
-def print(dist, n)
-  str = "Destination  Distance\n"
+def printer(dist, prev)
+  #csv file with desrination node, cost, previous node
+  str = ""
   for i in 0..NUM_NODES-1
-    str += "    #{i}\t\t#{dist[i]}\n"
+    if (i != $host_index)
+      n_d = $list_of_nodes[i]
+      n_p = $list_of_nodes[(prev[i])]
+      str += "#{n_d},#{dist[i]},#{n_p}\n"
+    end
   end
   return str
 end
@@ -779,13 +788,16 @@ end
 def dijkstra(graph, src)
   dist = []
   shortest = []
+  prev = []
   
   for i in 0..(NUM_NODES-1)
     dist[i] = PositiveInfinity
     shortest[i] = false
+    prev[i] = nil
   end
 
   dist[src] = 0
+  prev[src] = nil
 
   for count in 0..NUM_NODES-2
     u = min_dist(dist, shortest);
@@ -799,14 +811,15 @@ def dijkstra(graph, src)
 =end
       if (!shortest[n] && graph[u][n] != 0 && dist[u] != PositiveInfinity && (dist[u] + graph[u][n]) < dist[n])
         dist[n] = dist[u] + graph[u][n]
+        prev[n] = u
       end
     end
   end
 
-  return print(dist, NUM_NODES)
+  return printer(dist, prev)
 end
 
-File.open(hostname+'_dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, 0)) }
+File.open(hostname+'_dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, $host_index)) }
 
 loop {
   
