@@ -885,7 +885,7 @@ end
 print "=Shortest Path: "
 puts $path.inspect
 
-str = ""
+str = "Routing table for #{hostname}"
 
 FileUtils.mkdir_p($routing_table_path) 
-File.open($routing_table_path+hostname+'_routing.csv', 'w+') { |file| file.write(str) }
+File.open($routing_table_path+'/'+hostname+'_routing.csv', 'w+') { |file| file.write(str) }
