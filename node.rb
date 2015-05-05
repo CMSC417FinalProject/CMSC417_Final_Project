@@ -854,7 +854,7 @@ $path = Array.new(num_of_nodes){[]}
 #$path[$host_index] = [hostname]
 
 
-
+#Recursive helper function to find the path using previous nodes from Dijstra results
 def prev_node_finder(n_s, i)
       path_line = $dijkstra_result.select{ |line| line =~ /^#{n_s}/}
       path_line_array = []
@@ -869,23 +869,32 @@ def prev_node_finder(n_s, i)
       #puts "Previous node of #{n_d} is #{prev_node}"
 end
 
-
+#Create shortest path from hostname to every node in the network
 for i in 0..(num_of_nodes-1)
   n_s = $list_of_nodes[i]
-
     n_s = $list_of_nodes[i]
     prev_node_finder(n_s,i)
-  
     $path[i].reverse!
     $path[i].push(n_s)
- 
 end
 
 
 print "=Shortest Path: "
 puts $path.inspect
 
-str = "Routing table for #{hostname}"
+#Making routing tables
 
 FileUtils.mkdir_p($routing_table_path) 
-File.open($routing_table_path+'/'+hostname+'_routing.csv', 'w+') { |file| file.write(str) }
+routing = File.open($routing_table_path+'/'+hostname+'_routing.csv', 'w+')
+$list_of_nodes.each_with_index{|n_d, index|
+  next_hop = $path[index][1]
+  dijsktra_line = $dijkstra_result.select{ |line| line =~ /^#{n_d}/}
+  if (dijsktra_line[0] == nil)
+    routing_cost = 0
+  else
+    routing_cost = (dijsktra_line[0].split(','))[1]
+  end
+  line = "#{hostname},#{n_d},#{routing_cost},#{next_hop}"
+  routing.write(line+"\n")
+}
+routing.close
