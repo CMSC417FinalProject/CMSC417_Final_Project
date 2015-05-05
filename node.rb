@@ -819,6 +819,7 @@ FileUtils.mkdir_p('Dijksta_files')
 
 
 
+
 #FileUtils.mkdir_p 'Dijksta_files'
 #some_path = 
 File.open('Dijksta_files/'+hostname+'_dijkstra.csv', 'w+') { |file| file.write(dijkstra(graph, $host_index)) }
