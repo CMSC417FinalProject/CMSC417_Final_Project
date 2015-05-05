@@ -1,5 +1,5 @@
+#ruby node.rb <nta> <atl> <config_file>
 =begin
-  
 PROJECT 3
 Members:
 Sarthi Andley
@@ -13,17 +13,45 @@ require 'set'
 require 'fileutils'
 #require 'json'
 
-# Globals
-server_port = 2000
+
+#CONFIG FILE - PARAMETERS
+$config_file = File.readlines(ARGV[2])
+
+#defaults
+$max_packet_size = 255
+$cost_path = "costs.txt"
+$routing_interval = 200
+$routing_table_path = "Routing_tables"
+$dump_interval = 200
+
+#Read from file
+$config_file.each_with_index do |line, index|
+  line.delete!("\n")
+  case index
+  when 0
+    $max_packet_size = line
+  when 1
+    $cost_path = line
+  when 2
+    $routing_interval = line
+  when 3
+    $routing_table_path = line
+  when 4
+    $dump_interval = line
+  else
+    puts "Error: Config file is ignoring -- #{line}"
+  end
+end
+
 
 #Useful variables and methos
 $nodes_to_addrs = File.readlines(ARGV[0])
 $addrs_to_links = File.readlines(ARGV[1])
-$costs = File.readlines("fourline-costs.txt", 'r')
-$costs = $costs[0]
-
-
+$costs = (File.readlines($cost_path, 'r'))[0]
 $sequence_number = 0
+server_port = 2000
+#$costs = $costs[0]
+
 
 
 class Matrix
@@ -813,15 +841,10 @@ def dijkstra(graph, src)
   return printer(dist, prev)
 end
 
-dirname = File.dirname('Dijksta_files')
+#dirname = File.dirname('Dijksta_files')
 
 FileUtils.mkdir_p('Dijksta_files')
-
-
-
-
-#FileUtils.mkdir_p 'Dijksta_files'
-#some_path = 
+ 
 File.open('Dijksta_files/'+hostname+'_dijkstra.csv', 'w+') { |file| file.write(dijkstra(graph, $host_index)) }
 
 $dijkstra_read = File.readlines('Dijksta_files/'+hostname+'_dijkstra.csv', 'r')
@@ -861,3 +884,8 @@ end
 
 print "=Shortest Path: "
 puts $path.inspect
+
+str = ""
+
+FileUtils.mkdir_p($routing_table_path) 
+File.open($routing_table_path+hostname+'_routing.csv', 'w+') { |file| file.write(str) }
