@@ -18,7 +18,7 @@ server_port = 2000
 #Useful variables and methos
 $nodes_to_addrs = File.readlines(ARGV[0])
 $addrs_to_links = File.readlines(ARGV[1])
-$costs = File.readlines("triangle-costs.txt", 'r')
+$costs = File.readlines("costs.txt", 'r')
 $costs = $costs[0]
 
 
@@ -193,10 +193,10 @@ for i in 0..(num_of_nodes-1)
     cost[i][j] = c 
    end
 end
-puts "Sequence number from costs file: #{$sequence_number}"
+puts "=Sequence number of cost file used: #{$sequence_number}"
 
-puts "Cost Matrix: "
-puts cost.inspect
+#puts "Cost Matrix: "
+#puts cost.inspect
 =begin
 print "Connections n1 & n2 : "
 puts get_cost("n1","n2").inspect
@@ -223,7 +223,6 @@ $host_index = $list_of_nodes.index(hostname)
 puts "=Hostname: #{hostname}"
 print "=Node list : "
 puts $list_of_nodes.inspect
-puts "=Index: #{$host_index}"
 
 #Addresses connected to the hostname
 addr_lines = $nodes_to_addrs.select{ |line| line =~ /#{hostname}\s/ }
@@ -803,12 +802,6 @@ def dijkstra(graph, src)
     u = min_dist(dist, shortest);
     shortest[u] = true;
     for n in 0..NUM_NODES-1
-=begin
-          puts "dist[u] = "
-          puts dist[u].inpect
-          puts "graph[u][n] = "
-          puts graph[u][n].inspect
-=end
       if (!shortest[n] && graph[u][n] != 0 && dist[u] != PositiveInfinity && (dist[u] + graph[u][n]) < dist[n])
         dist[n] = dist[u] + graph[u][n]
         prev[n] = u
@@ -821,6 +814,40 @@ end
 
 File.open(hostname+'_dijkstra.csv', 'w') { |file| file.write(dijkstra(graph, $host_index)) }
 
-loop {
+$dijkstra_read = File.readlines(hostname+'_dijkstra.csv', 'r')
+$dijkstra_result = $dijkstra_read[0].split("\n")
+
+$path = Array.new(num_of_nodes){[]}
+#$path[$host_index] = [hostname]
+
+
+
+def prev_node_finder(n_s, i)
+      path_line = $dijkstra_result.select{ |line| line =~ /^#{n_s}/}
+      path_line_array = []
+      if (path_line[0] == nil)
+         return
+      else
+        path_line_array = path_line[0].split(',')
+      end
+      prev_node = path_line_array[2]
+      $path[i].push(prev_node)
+      prev_node_finder(prev_node,i)
+      #puts "Previous node of #{n_d} is #{prev_node}"
+end
+
+
+for i in 0..(num_of_nodes-1)
+  n_s = $list_of_nodes[i]
+
+    n_s = $list_of_nodes[i]
+    prev_node_finder(n_s,i)
   
-}
+    $path[i].reverse!
+    $path[i].push(n_s)
+ 
+end
+
+
+print "=Shortest Path: "
+puts $path.inspect
