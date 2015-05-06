@@ -1,5 +1,5 @@
 255
-triangle-costs.txt
+2n_1c-costs.txt
 200
 Routing_tables
 200
