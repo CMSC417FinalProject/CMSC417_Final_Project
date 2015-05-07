@@ -47,7 +47,7 @@ end
 #Useful variables and methos
 $nodes_to_addrs = File.readlines(ARGV[0])
 $addrs_to_links = File.readlines(ARGV[1])
-$costs = (File.readlines($cost_path, 'r'))[0]
+$costs = (File.readlines($cost_path, 'r'))
 $sequence_number = 0
 $server_port = 2000
 #$costs = $costs[0]
@@ -842,6 +842,7 @@ $dijkstra_result = $dijkstra_read[0].split("\n")
 $path = Array.new(num_of_nodes){[]}
 #$path[$host_index] = [hostname]
 
+$hostname = hostname
 
 #Recursive helper function to find the path using previous nodes from Dijstra results
 def prev_node_finder(n_s, i)
@@ -853,6 +854,9 @@ def prev_node_finder(n_s, i)
         path_line_array = path_line[0].split(',')
       end
       prev_node = path_line_array[2]
+      if (prev_node == $hostname)
+        return
+      end
       $path[i].push(prev_node)
       prev_node_finder(prev_node,i)
       #puts "Previous node of #{n_d} is #{prev_node}"
@@ -1015,6 +1019,8 @@ if (nature == "SERVER")
     dst = cmd[1]
     numpings = cmd[2]
     delay = cmd[3]
+    type = "PING"
+
     puts "TO DO: Ping #{dst} with delay = #{delay}, #{numpings} times"
   elsif (cmd[0] == "TRACEROUTE")
     dst = cmd[1]
@@ -1044,6 +1050,13 @@ if (nature == "CLIENT")
                 #puts data_path.inspect
                 server(msg.data, data_path, msg.type)
               else
+                #CHECK FOR TYPE
+                if(msg.type == "PING")
+                  path = msg.original_path.reverse
+                  print "new path is "
+                  puts path.inspect
+                  puts "PING RECEIVED from #{path[-1]}"
+                end
                 puts "Data: #{msg.data}"
                 puts "Message: #{msg.to_s}"
               end
