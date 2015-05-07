@@ -854,7 +854,10 @@ def prev_node_finder(n_s, i)
         path_line_array = path_line[0].split(',')
       end
       prev_node = path_line_array[2]
+      
       if (prev_node == $hostname)
+        index = $list_of_nodes.index(hostname)
+        prev[index] = $hostname
         return
       end
       $path[i].push(prev_node)
