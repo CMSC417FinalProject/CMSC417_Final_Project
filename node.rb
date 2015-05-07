@@ -989,16 +989,40 @@ neighbors.each{ |n|
 
 
 if (nature == "SERVER")
-  puts "\nPlease enter type of data"
-  type = $stdin.gets.chomp
-  puts "\nPlease enter the data of the message: "
-  data = $stdin.gets.chomp
-  puts "\nPlease enter the destination node: "
-  dest_node = $stdin.gets.chomp
-  dest_index = $list_of_nodes.index(dest_node)
-  dest_path = $path[dest_index]
-  dest_path.shift
-  server(data,dest_path,type)
+  puts "\nEnter the command"
+  c = $stdin.gets.chomp
+  cmd = split(" ")
+
+  if(cmd[0] == "SENDMSG")
+
+    cmd_data = c.split("\"")
+    data = cmd_data[1]
+    dest_node = ip_to_node(cmd[1])
+    #data = cmd[2].delete("\"")
+
+    puts "\nPlease enter type of data"
+    type = $stdin.gets.chomp
+    #puts "\nPlease enter the data of the message: "
+    #data = $stdin.gets.chomp
+    #puts "\nPlease enter the destination node: "
+    #dest_node = $stdin.gets.chomp
+    
+    dest_index = $list_of_nodes.index(dest_node)
+    dest_path = $path[dest_index]
+    dest_path.shift
+    server(data,dest_path,type)
+  elsif (cmd[0] == "PING")
+    dst = cmd[1]
+    numpings = cmd[2]
+    delay = cmd[3]
+    puts "TO DO: Ping #{dst} with delay = #{delay}, #{numpings} times"
+  elsif (cmd[0] == "TRACEROUTE")
+    dst = cmd[1]
+    puts "TO DO: TRACEROUTE to #{dst}"
+  else
+    puts "INCORRECT COMMAND"
+  end
+    
 end
 
 
