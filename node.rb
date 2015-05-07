@@ -945,7 +945,7 @@ puts "\nPlease enter type of data (SERVER/CLIENT)"
 type = $stdin.gets.chomp
 
 
-def server(data, dest_node)
+def server(data, dest_path)
         data_size = data.length
 
         if (data_size > $max_packet_size)
@@ -953,60 +953,78 @@ def server(data, dest_node)
           #FRAGMENTATION HERE
         end
 
-        dest_index = $list_of_nodes.index(dest_node)
-        dest_path = $path[dest_index]
+        #SEND TO THE NEW FIRST
+        dest = dest_path[0]   #NEXT HOP NODE
         type = "SERVER"
 
         message = Message.new(1, type, 1, dest_path, data, data_size)
-        #message = Message.new(1, type, 1, ["n1","n2"], data, 255)
+        
         puts "message would be #{message.to_s}"
 
-      # Actual TCP Server
-      server = TCPServer.open($server_port)   # Socket to listen on port 2000
-      s = Thread.new {
-        loop {    
-        puts "SERVER IS WAITING FOR CLIENT"                      # Servers run forever
-          Thread.start(server.accept) do |client|
-            puts "SENT THE CLIENT: #{message.to_s}"
-            client.puts(message.to_s) # Send the time to the client    
-            #puts "Closing the connection. Bye!"
-            client.close                # Disconnect from the client
-          end
-        }
+        # Actual TCP Server
+        server = TCPServer.open($server_port)   # Socket to listen on port 2000
+        s = Thread.new {
+          loop {    
+          puts "SERVER IS WAITING FOR CLIENT"                      # Servers run forever
+            Thread.start(server.accept) do |client|
+              puts "SENT THE CLIENT: #{message.to_s}"
+              client.puts(message.to_s) # Send the time to the client    
+              #puts "Closing the connection. Bye!"
+              client.close                # Disconnect from the client
+            end
+          }
       }
 
 end
 #CLIENT
+
+#neighbors
+
+neighbors_ip = []
+neighbors.each{ |n|
+  neighbors_ip.push(conn_ip(hostname, n))
+}
+
 
 if (type == "SERVER")
   puts "\nPlease enter the data of the message: "
   data = $stdin.gets.chomp
   puts "\nPlease enter the destination node: "
   dest_node = $stdin.gets.chomp
-  server(data,dest_node)
+  dest_index = $list_of_nodes.index(dest_node)
+  dest_path = $path[dest_index]
+  dest_path.shift
+  server(data,dest_path)
 end
 
 
 if (type == "CLIENT")
 
-    server_ip = conn_ip("n2", "n1")
-    puts "Server's IP is #{server_ip}"
+    #server_ip = conn_ip("n2", "n1")
+    #puts "Server's IP is #{server_ip}"
+    neighbors_ip.each{ |ip|
+        begin
+          s = TCPSocket.open(ip, $server_port)
+          while line = s.gets   # Read lines from the socket
+            msg_str = line.chop      # And print with platform line terminator
+            msg = message_builder(msg_str)
 
-    s = TCPSocket.open(server_ip, $server_port)
-    while line = s.gets   # Read lines from the socket
-      msg_str = line.chop      # And print with platform line terminator
-      msg = message_builder(msg_str)
+            if (msg.path[1] == hostname)
+              puts "This is the destination of the message"
+            elsif (msg.path[1] != nil && msg.path[1] != hostname)
+              puts "FYI We need to send this message forward to #{msg.path[0]}"
+            end
 
-      if (msg.path[1] == hostname)
-        puts "This is the destination of the message"
-      elsif (msg.path[1] != nil && msg.path[1] != hostname)
-        puts "FYI We need to send this message forward to #{msg.path[0]}"
-      end
-
-      puts "Data: #{msg.data}"
-      puts "Message: #{msg.to_s}"
-    end
-    s.close               # Close the socket when done
+            puts "Data: #{msg.data}"
+            puts "Message: #{msg.to_s}"
+          end
+          s.close
+        rescue SystemCallError            
+                  #puts "No connection from #{ip_to_node(ip)}"
+        end
+                         # Close the socket when done
+  
+      }
 end
 
 sleep(60)
