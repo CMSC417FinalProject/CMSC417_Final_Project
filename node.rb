@@ -896,14 +896,16 @@ class Message
   attr_reader :path
   attr_reader :data
   attr_reader :data_size
-  
-  def initialize(data_id, type, sequence, path, data, data_size)
+  attr_reader :original_path
+
+  def initialize(data_id, type, sequence, path, data, data_size, original_path)
     @data_id = data_id
     @type = type
     @path = path
     @sequence = sequence
     @data = data
     @data_size = data_size
+    @original_path = original_path
   end
     
   
@@ -921,6 +923,9 @@ class Message
     ret += data
     ret += "~"
     ret += data_size.to_s
+    ret += "~"
+    path_ret = original_path.inspect.delete("[").delete("]").delete("\"").delete(" ")
+    ret += path_ret
   end
 
 end
@@ -934,18 +939,19 @@ def message_builder msg
     path = message_arr[3].split(",")
     data = message_arr[4]
     data_size = message_arr[5]
-    return Message.new(data_id, type, sequence, path, data, data_size)
+    original_path = message_arr[6]
+    return Message.new(data_id, type, sequence, path, data, data_size, original_path)
 end
 
 
 
 
 STDOUT.flush
-puts "\nPlease enter type of data (SERVER/CLIENT)"
-type = $stdin.gets.chomp
+puts "\nPlease enter nature of node (SERVER/CLIENT)"
+nature = $stdin.gets.chomp
 
 
-def server(data, dest_path)
+def server(data, dest_path, type)
         data_size = data.length
 
         if (data_size > $max_packet_size)
@@ -953,21 +959,17 @@ def server(data, dest_path)
           #FRAGMENTATION HERE
         end
 
-        #SEND TO THE NEW FIRST
         dest = dest_path[0]   #NEXT HOP NODE
-        type = "SERVER"
 
-        message = Message.new(1, type, 1, dest_path, data, data_size)
-        
-        puts "message would be #{message.to_s}"
+        message = Message.new(1, type, 1, dest_path, data, data_size, dest_path)
+      
 
         # Actual TCP Server
         server = TCPServer.open($server_port)   # Socket to listen on port 2000
         s = Thread.new {
           loop {    
-          puts "SERVER IS WAITING FOR CLIENT"                      # Servers run forever
             Thread.start(server.accept) do |client|
-              puts "SENT THE CLIENT: #{message.to_s}"
+              puts "SENT: #{message.to_s}"
               client.puts(message.to_s) # Send the time to the client    
               #puts "Closing the connection. Bye!"
               client.close                # Disconnect from the client
@@ -986,7 +988,9 @@ neighbors.each{ |n|
 }
 
 
-if (type == "SERVER")
+if (nature == "SERVER")
+  puts "\nPlease enter type of data"
+  type = $stdin.gets.chomp
   puts "\nPlease enter the data of the message: "
   data = $stdin.gets.chomp
   puts "\nPlease enter the destination node: "
@@ -994,11 +998,11 @@ if (type == "SERVER")
   dest_index = $list_of_nodes.index(dest_node)
   dest_path = $path[dest_index]
   dest_path.shift
-  server(data,dest_path)
+  server(data,dest_path,type)
 end
 
 
-if (type == "CLIENT")
+if (nature == "CLIENT")
 
     #server_ip = conn_ip("n2", "n1")
     #puts "Server's IP is #{server_ip}"
@@ -1008,15 +1012,22 @@ if (type == "CLIENT")
           while line = s.gets   # Read lines from the socket
             msg_str = line.chop      # And print with platform line terminator
             msg = message_builder(msg_str)
-
-            if (msg.path[1] == hostname)
-              puts "This is the destination of the message"
-            elsif (msg.path[1] != nil && msg.path[1] != hostname)
-              puts "FYI We need to send this message forward to #{msg.path[0]}"
+            
+            if (msg.path[0] != nil && msg.path[0] == hostname)
+              if(msg.path[1] != nil)
+                data_path = msg.path.drop(1)
+                #print "Sending it forward along the path = "
+                #puts data_path.inspect
+                server(msg.data, data_path, msg.type)
+              else
+                puts "Data: #{msg.data}"
+                puts "Message: #{msg.to_s}"
+              end
             end
 
-            puts "Data: #{msg.data}"
-            puts "Message: #{msg.to_s}"
+            #elsif (msg.path[0] != nil && msg.path[0] != hostname)
+             # puts "FYI We need to send this message forward to #{msg.path[0]}"
+            #end
           end
           s.close
         rescue SystemCallError            
