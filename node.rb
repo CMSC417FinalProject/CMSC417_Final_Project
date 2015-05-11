@@ -4,7 +4,7 @@ PROJECT 3
 Members:
 Sarthi Andley
 Dylan Zingler
-Triana M.
+Triana McCorkle
 =end
 
 require 'socket'
