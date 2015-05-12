@@ -17,6 +17,9 @@ require 'fileutils'
 #CONFIG FILE - PARAMETERS
 $config_file = File.readlines(ARGV[2])
 
+# Message Types
+$message_types = ['SENDMSG', 'PING', 'TRACEROUTE', 'START', 'FINISH']
+
 #defaults
 $max_packet_size = 255
 $cost_path = "costs.txt"
@@ -52,8 +55,30 @@ $sequence_number = 0
 $server_port = 2000
 #$costs = $costs[0]
 
-
-
+def message_fragmentator(data_string)
+  # Converts a data_string to an array of messages if necessary
+  data_array = []
+  if (data_string.length > $max_packet_size)
+    data_array = data_string.chars.each_slice($max_packet_size).map(&:join)
+  
+  else
+    data_array << data_string   
+  end
+  
+  
+  messadata_arrayges_arr = []
+  data_array.each_with_index {|data_msg, i| 
+    
+    messages_arr.push(Message.new(data_id, "SENDMSG", i, path, data_msg, data_msg.length, original_path))
+    
+    }
+    
+  return messages_arr b
+  
+end    
+    
+  
+  
 class Matrix
   def []=(row, column, value)
     @rows[row][column] = value
@@ -937,7 +962,7 @@ class Message
 
 end
 def message_builder msg
-    # When a Client recives a message, this method creates Neighbor_Packet object
+    # When a Client recives a message, this method creates Message object
 
     message_arr = msg.split("~")
     data_id = message_arr[0]
