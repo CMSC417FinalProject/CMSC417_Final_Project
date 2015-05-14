@@ -104,6 +104,7 @@ def ip_to_node ip
 
   if (node_ip_lines[0] == nil)
     puts "ERROR: Could not find the IP = #{ip} in the nodes_to_addrs.txt file"
+    return nil
   end
 
   #Remove the IP and whitespace from string
@@ -1009,7 +1010,7 @@ neighbors.each{ |n|
 
 
 if (nature == "SERVER")
-  while(true)
+  
     puts "\nEnter the command"
     c = $stdin.gets.chomp
     cmd = c.split(" ")
@@ -1044,23 +1045,31 @@ if (nature == "SERVER")
     elsif (cmd[0] == "TRACEROUTE")
       dst = cmd[1]
       dest_node = ip_to_node(cmd[1])
-      #data = cmd[2].delete("\"")
-      type = "TraceRoute"    
-      dest_index = $list_of_nodes.index(dest_node)
-      dest_path = $path[dest_index]
-      puts dest_path.inspect
-      dest_path.each_with_index{|node, index|
-          if (node != dest_node)
-            next_node = dest_path[index+1]
-            puts conn_ip(next_node, node)
-          end
-
-      }
-      puts dst
+      if dest_node != nil
+          #uts "#{dst} was not found in the topology of the network"
+          #eturn 
+        #end
+        #data = cmd[2].delete("\"")
+        type = "TraceRoute"    
+        dest_index = $list_of_nodes.index(dest_node)
+        dest_path = $path[dest_index]
+        puts dest_path.inspect
+        dest_path.each_with_index{|node, index|
+            if (node != dest_node)
+              next_node = dest_path[index+1]
+              puts conn_ip(next_node, node)
+            end
+  
+        }
+        puts dst
+      else
+        puts "#{dst} was not found in the topology of the network"
+      end
+      
     else
       puts "INCORRECT COMMAND"
     end
-  end
+  
     
 end
 
