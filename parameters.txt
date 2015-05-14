@@ -1,5 +1,5 @@
-255
-fourbyfour-costs.txt
+10
+fourline-costs.txt
 200
 Routing_tables
 200

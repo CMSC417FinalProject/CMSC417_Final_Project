@@ -26,6 +26,7 @@ $cost_path = "costs.txt"
 $routing_interval = 200
 $routing_table_path = "Routing_tables"
 $dump_interval = 200
+$data_id = 1
 
 #Read from file
 $config_file.each_with_index do |line, index|
@@ -55,7 +56,7 @@ $sequence_number = 0
 $server_port = 2000
 #$costs = $costs[0]
 
-def message_fragmentator(data_string)
+def message_fragmentator(data_string, data_id, path, original_path)
   # Converts a data_string to an array of messages if necessary
   data_array = []
   if (data_string.length > $max_packet_size)
@@ -65,15 +66,15 @@ def message_fragmentator(data_string)
     data_array << data_string   
   end
   
-  
-  messadata_arrayges_arr = []
+  messages_arr = []
   data_array.each_with_index {|data_msg, i| 
     
-    messages_arr.push(Message.new(data_id, "SENDMSG", i, path, data_msg, data_msg.length, original_path))
+    messages_arr.push(Message.new($data_id, "SENDMSG", i, path, data_msg, data_msg.length, original_path))
     
     }
     
-  return messages_arr b
+  return messages_arr
+ 
   
 end    
     
@@ -983,26 +984,22 @@ puts "\nPlease enter nature of node (SERVER/CLIENT)"
 nature = $stdin.gets.chomp
 
 
-def server(data, dest_path, type)
-        data_size = data.length
-
-        if (data_size > $max_packet_size)
-          puts "MESSAGE DATA IS TOO BIG. Please develop fragmentation"
-          #FRAGMENTATION HERE
-        end
-
-        dest = dest_path[0]   #NEXT HOP NODE
-
-        message = Message.new(1, type, 1, dest_path, data, data_size, dest_path)
+def server(messages, dest_path, type)
       
-
         # Actual TCP Server
         server = TCPServer.open($server_port)   # Socket to listen on port 2000
         s = Thread.new {
           loop {    
             Thread.start(server.accept) do |client|
-              puts "SENT: #{message.to_s}"
-              client.puts(message.to_s) # Send the time to the client    
+              puts "SENT this number of messages: " + messages.length.to_s
+              
+              
+              messages.each {|message| 
+                
+                client.puts(message.to_s)
+                }
+              
+              #client.puts(message.to_s) # Send the time to the client    
               #puts "Closing the connection. Bye!"
               client.close                # Disconnect from the client
             end
@@ -1023,7 +1020,7 @@ neighbors.each{ |n|
 if (nature == "SERVER")
   puts "\nEnter the command"
   c = $stdin.gets.chomp
-  cmd = split(" ")
+  cmd = c.split(" ")
 
   if(cmd[0] == "SENDMSG")
 
@@ -1039,10 +1036,31 @@ if (nature == "SERVER")
     #puts "\nPlease enter the destination node: "
     #dest_node = $stdin.gets.chomp
     
+    
     dest_index = $list_of_nodes.index(dest_node)
+ #   puts $path[dest_index]
+    
+    
+    
+    
+  #  puts $path[dest_index]
+    messages = message_fragmentator(data, $data_id, $path[dest_index], $path[dest_index])
+    
+    # for start packet, the sequence number is the number of data packets we should recieve
+    start_packet =  Message.new($data_id, "START", messages.length, $path[dest_index], "", 0, $path[dest_index])
+    
+    # Finish packets sequence number is messages lenght plus 1
+    finish_packet = Message.new($data_id, "FINISH", messages.length+1,$path[dest_index], "", 0, $path[dest_index])
+    
+    messages.unshift(start_packet)
+    messages.push(finish_packet)
+    
+    
+    
+    
     dest_path = $path[dest_index]
     dest_path.shift
-    server(data,dest_path,type)
+    server(messages,dest_path,type)
   elsif (cmd[0] == "PING")
     dst = cmd[1]
     numpings = cmd[2]
