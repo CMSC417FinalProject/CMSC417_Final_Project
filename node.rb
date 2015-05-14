@@ -975,11 +975,6 @@ nature = $stdin.gets.chomp
 def server(data, dest_path, type)
         data_size = data.length
 
-        if (data_size > $max_packet_size)
-          puts "MESSAGE DATA IS TOO BIG. Please develop fragmentation"
-          #FRAGMENTATION HERE
-        end
-
         dest = dest_path[0]   #NEXT HOP NODE
 
         message = Message.new(1, type, 1, dest_path, data, data_size, dest_path)
