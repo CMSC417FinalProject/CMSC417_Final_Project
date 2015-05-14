@@ -4,7 +4,7 @@ PROJECT 3
 Members:
 Sarthi Andley
 Dylan Zingler
-Triana McCorkle
+Triana M.
 =end
 
 require 'socket'
@@ -17,16 +17,12 @@ require 'fileutils'
 #CONFIG FILE - PARAMETERS
 $config_file = File.readlines(ARGV[2])
 
-# Message Types
-$message_types = ['SENDMSG', 'PING', 'TRACEROUTE', 'START', 'FINISH']
-
 #defaults
 $max_packet_size = 255
 $cost_path = "costs.txt"
 $routing_interval = 200
 $routing_table_path = "Routing_tables"
 $dump_interval = 200
-$data_id = 1
 
 #Read from file
 $config_file.each_with_index do |line, index|
@@ -74,12 +70,10 @@ def message_fragmentator(data_string, data_id, path, original_path)
     }
     
   return messages_arr
- 
-  
-end    
-    
-  
-  
+   
+end 
+
+
 class Matrix
   def []=(row, column, value)
     @rows[row][column] = value
@@ -868,7 +862,6 @@ $dijkstra_result = $dijkstra_read[0].split("\n")
 $path = Array.new(num_of_nodes){[]}
 #$path[$host_index] = [hostname]
 
-$hostname = hostname
 
 #Recursive helper function to find the path using previous nodes from Dijstra results
 def prev_node_finder(n_s, i)
@@ -880,12 +873,6 @@ def prev_node_finder(n_s, i)
         path_line_array = path_line[0].split(',')
       end
       prev_node = path_line_array[2]
-
-      if (prev_node == $hostname)
-        index = $list_of_nodes.index($hostname)
-        $path[index] = [[$hostname]]
-        return
-      end
       $path[i].push(prev_node)
       prev_node_finder(prev_node,i)
       #puts "Previous node of #{n_d} is #{prev_node}"
@@ -963,7 +950,7 @@ class Message
 
 end
 def message_builder msg
-    # When a Client recives a message, this method creates Message object
+    # When a Client recives a message, this method creates Neighbor_Packet object
 
     message_arr = msg.split("~")
     data_id = message_arr[0]
@@ -984,22 +971,26 @@ puts "\nPlease enter nature of node (SERVER/CLIENT)"
 nature = $stdin.gets.chomp
 
 
-def server(messages, dest_path, type)
+def server(data, dest_path, type)
+        data_size = data.length
+
+        if (data_size > $max_packet_size)
+          puts "MESSAGE DATA IS TOO BIG. Please develop fragmentation"
+          #FRAGMENTATION HERE
+        end
+
+        dest = dest_path[0]   #NEXT HOP NODE
+
+        message = Message.new(1, type, 1, dest_path, data, data_size, dest_path)
       
+
         # Actual TCP Server
         server = TCPServer.open($server_port)   # Socket to listen on port 2000
         s = Thread.new {
           loop {    
             Thread.start(server.accept) do |client|
-              puts "SENT this number of messages: " + messages.length.to_s
-              
-              
-              messages.each {|message| 
-                
-                client.puts(message.to_s)
-                }
-              
-              #client.puts(message.to_s) # Send the time to the client    
+              puts "SENT: #{message.to_s}"
+              client.puts(message.to_s) # Send the time to the client    
               #puts "Closing the connection. Bye!"
               client.close                # Disconnect from the client
             end
@@ -1018,61 +1009,57 @@ neighbors.each{ |n|
 
 
 if (nature == "SERVER")
-  puts "\nEnter the command"
-  c = $stdin.gets.chomp
-  cmd = c.split(" ")
+  while(true)
+    puts "\nEnter the command"
+    c = $stdin.gets.chomp
+    cmd = c.split(" ")
 
-  if(cmd[0] == "SENDMSG")
+    if(cmd[0] == "SENDMSG")
+      cmd_data = c.split("\"")
+      data = cmd_data[1]
+      dest_node = ip_to_node(cmd[1])
+      #data = cmd[2].delete("\"")
+      type = "SendMSG"
+      #puts "\nPlease enter type of data"
+      #type = $stdin.gets.chomp
+      #puts "\nPlease enter the data of the message: "
+      #data = $stdin.gets.chomp
+      #puts "\nPlease enter the destination node: "
+      #dest_node = $stdin.gets.chomp
+      
+      dest_index = $list_of_nodes.index(dest_node)
+      dest_path = $path[dest_index]
+      dest_path.shift
+      server(data,dest_path,type)
+    elsif (cmd[0] == "PING")
+      dst = cmd[1]
+      numpings = cmd[2]
+      delay = cmd[3]
+      dest_node = ip_to_node(cmd[1])
+      type = "PING"    
+      dest_index = $list_of_nodes.index(dest_node)
+      dest_path = $path[dest_index]
 
-    cmd_data = c.split("\"")
-    data = cmd_data[1]
-    dest_node = ip_to_node(cmd[1])
-    #data = cmd[2].delete("\"")
+      puts "TO DO: Ping #{dst} with delay = #{delay}, #{numpings} times"
+    elsif (cmd[0] == "TRACEROUTE")
+      dst = cmd[1]
+      dest_node = ip_to_node(cmd[1])
+      #data = cmd[2].delete("\"")
+      type = "TraceRoute"    
+      dest_index = $list_of_nodes.index(dest_node)
+      dest_path = $path[dest_index]
+      puts dest_path.inspect
+      dest_path.each_with_index{|node, index|
+          if (node != dest_node)
+            next_node = dest_path[index+1]
+            puts conn_ip(next_node, node)
+          end
 
-    puts "\nPlease enter type of data"
-    type = $stdin.gets.chomp
-    #puts "\nPlease enter the data of the message: "
-    #data = $stdin.gets.chomp
-    #puts "\nPlease enter the destination node: "
-    #dest_node = $stdin.gets.chomp
-    
-    
-    dest_index = $list_of_nodes.index(dest_node)
- #   puts $path[dest_index]
-    
-    
-    
-    
-  #  puts $path[dest_index]
-    messages = message_fragmentator(data, $data_id, $path[dest_index], $path[dest_index])
-    
-    # for start packet, the sequence number is the number of data packets we should recieve
-    start_packet =  Message.new($data_id, "START", messages.length, $path[dest_index], "", 0, $path[dest_index])
-    
-    # Finish packets sequence number is messages lenght plus 1
-    finish_packet = Message.new($data_id, "FINISH", messages.length+1,$path[dest_index], "", 0, $path[dest_index])
-    
-    messages.unshift(start_packet)
-    messages.push(finish_packet)
-    
-    
-    
-    
-    dest_path = $path[dest_index]
-    dest_path.shift
-    server(messages,dest_path,type)
-  elsif (cmd[0] == "PING")
-    dst = cmd[1]
-    numpings = cmd[2]
-    delay = cmd[3]
-    type = "PING"
-
-    puts "TO DO: Ping #{dst} with delay = #{delay}, #{numpings} times"
-  elsif (cmd[0] == "TRACEROUTE")
-    dst = cmd[1]
-    puts "TO DO: TRACEROUTE to #{dst}"
-  else
-    puts "INCORRECT COMMAND"
+      }
+      puts dst
+    else
+      puts "INCORRECT COMMAND"
+    end
   end
     
 end
@@ -1096,13 +1083,6 @@ if (nature == "CLIENT")
                 #puts data_path.inspect
                 server(msg.data, data_path, msg.type)
               else
-                #CHECK FOR TYPE
-                if(msg.type == "PING")
-                  path = msg.original_path.reverse
-                  print "new path is "
-                  puts path.inspect
-                  puts "PING RECEIVED from #{path[-1]}"
-                end
                 puts "Data: #{msg.data}"
                 puts "Message: #{msg.to_s}"
               end
